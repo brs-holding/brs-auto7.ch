@@ -4,10 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Car } from "@db/schema";
 
 export function CarSearch() {
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const initialQuery = searchParams.get('q') || '';
+
+  const [query, setQuery] = useState(initialQuery);
   const [brand, setBrand] = useState<string>("");
   const [model, setModel] = useState<string>("");
   const [year, setYear] = useState<string>("");
@@ -18,13 +24,29 @@ export function CarSearch() {
     queryKey: ["/api/cars"],
   });
 
+  useEffect(() => {
+    setQuery(initialQuery);
+    // Try to match the query to a brand or model
+    if (initialQuery && cars) {
+      const matchingBrand = cars.find(car => 
+        car.brand.toLowerCase().includes(initialQuery.toLowerCase())
+      )?.brand;
+      if (matchingBrand) {
+        setBrand(matchingBrand);
+      }
+    }
+  }, [initialQuery, cars]);
+
   const filteredCars = cars?.filter((car) => {
+    const matchesQuery = query
+      ? `${car.brand} ${car.model} ${car.year}`.toLowerCase().includes(query.toLowerCase())
+      : true;
     const matchesBrand = brand ? car.brand === brand : true;
     const matchesModel = model ? car.model === model : true;
     const matchesYear = year ? car.year.toString() === year : true;
     const matchesMileage = car.mileage <= maxMileage;
     const matchesPrice = car.price >= priceRange[0] && car.price <= priceRange[1];
-    return matchesBrand && matchesModel && matchesYear && matchesMileage && matchesPrice;
+    return matchesQuery && matchesBrand && matchesModel && matchesYear && matchesMileage && matchesPrice;
   });
 
   const brands = Array.from(new Set(cars?.map((car) => car.brand) || [])).sort();
@@ -45,10 +67,13 @@ export function CarSearch() {
         <div className="space-y-6">
           <div>
             <Label>Marca</Label>
-            <Select value={brand} onValueChange={(value) => {
-              setBrand(value);
-              setModel(""); // Reset model when brand changes
-            }}>
+            <Select 
+              value={brand} 
+              onValueChange={(value) => {
+                setBrand(value === "_all" ? "" : value);
+                setModel(""); // Reset model when brand changes
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Todas las marcas" />
               </SelectTrigger>
@@ -65,7 +90,10 @@ export function CarSearch() {
 
           <div>
             <Label>Modelo</Label>
-            <Select value={model} onValueChange={setModel}>
+            <Select 
+              value={model} 
+              onValueChange={(value) => setModel(value === "_all" ? "" : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Todos los modelos" />
               </SelectTrigger>
