@@ -1,84 +1,66 @@
 import { useQuery } from "@tanstack/react-query";
 import { CarCard } from "@/components/CarCard";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Car } from "@db/schema";
 
 export function CarSearch() {
   const [location] = useLocation();
   const searchParams = new URLSearchParams(location.split('?')[1]);
-  const initialQuery = searchParams.get('q') || '';
 
-  const [query, setQuery] = useState(initialQuery);
-  const [brand, setBrand] = useState<string>("");
-  const [model, setModel] = useState<string>("");
-  const [year, setYear] = useState<string>("");
-  const [maxMileage, setMaxMileage] = useState<number>(300000);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
+  const [brand, setBrand] = useState(searchParams.get('brand') || "all");
+  const [year, setYear] = useState(searchParams.get('year') || "all");
+  const [priceRange, setPriceRange] = useState(searchParams.get('price') || "all");
 
   const { data: cars, isLoading } = useQuery<Car[]>({
     queryKey: ["/api/cars"],
   });
 
-  useEffect(() => {
-    setQuery(initialQuery);
-    // Try to match the query to a brand or model
-    if (initialQuery && cars) {
-      const matchingBrand = cars.find(car => 
-        car.brand.toLowerCase().includes(initialQuery.toLowerCase())
-      )?.brand;
-      if (matchingBrand) {
-        setBrand(matchingBrand);
-      }
-    }
-  }, [initialQuery, cars]);
-
   const filteredCars = cars?.filter((car) => {
-    const matchesQuery = query
-      ? `${car.brand} ${car.model} ${car.year}`.toLowerCase().includes(query.toLowerCase())
-      : true;
-    const matchesBrand = brand ? car.brand === brand : true;
-    const matchesModel = model ? car.model === model : true;
-    const matchesYear = year ? car.year.toString() === year : true;
-    const matchesMileage = Number(car.mileage) <= maxMileage;
-    const matchesPrice = Number(car.price) >= priceRange[0] && Number(car.price) <= priceRange[1];
-    return matchesQuery && matchesBrand && matchesModel && matchesYear && matchesMileage && matchesPrice;
+    const matchesBrand = brand === "all" || car.brand === brand;
+    const matchesYear = year === "all" || car.year.toString() === year;
+
+    let matchesPrice = true;
+    if (priceRange !== "all") {
+      const [min, max] = priceRange.split('-').map(Number);
+      const price = Number(car.price);
+      matchesPrice = price >= min && price <= max;
+    }
+
+    return matchesBrand && matchesYear && matchesPrice;
   });
 
   const brands = Array.from(new Set(cars?.map((car) => car.brand) || [])).sort();
-  const models = Array.from(
-    new Set(
-      cars
-        ?.filter((car) => (brand ? car.brand === brand : true))
-        .map((car) => car.model) || []
-    )
-  ).sort();
+  const years = Array.from(
+    new Set(cars?.map((car) => car.year.toString()) || [])
+  ).sort((a, b) => parseInt(b) - parseInt(a));
+
+  const priceRanges = [
+    { label: "Hasta RD$ 500,000", value: "0-500000" },
+    { label: "RD$ 500,000 - 1,000,000", value: "500000-1000000" },
+    { label: "RD$ 1,000,000 - 2,000,000", value: "1000000-2000000" },
+    { label: "Más de RD$ 2,000,000", value: "2000000-999999999" },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Buscar Carros</h1>
+      <h1 className="text-3xl font-bold mb-4">
+        {filteredCars?.length.toLocaleString()} Vehículos Encontrados
+      </h1>
 
       <div className="grid md:grid-cols-[300px,1fr] gap-8">
         {/* Filters */}
         <div className="space-y-6">
           <div>
             <Label>Marca</Label>
-            <Select 
-              value={brand} 
-              onValueChange={(value) => {
-                setBrand(value === "_all" ? "" : value);
-                setModel(""); // Reset model when brand changes
-              }}
-            >
+            <Select value={brand} onValueChange={setBrand}>
               <SelectTrigger>
-                <SelectValue placeholder="Todas las marcas" />
+                <SelectValue placeholder="Marca & Modelo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="_all">Todas las marcas</SelectItem>
+                <SelectItem value="all">Todas las marcas</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -89,19 +71,16 @@ export function CarSearch() {
           </div>
 
           <div>
-            <Label>Modelo</Label>
-            <Select 
-              value={model} 
-              onValueChange={(value) => setModel(value === "_all" ? "" : value)}
-            >
+            <Label>Año</Label>
+            <Select value={year} onValueChange={setYear}>
               <SelectTrigger>
-                <SelectValue placeholder="Todos los modelos" />
+                <SelectValue placeholder="Año" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="_all">Todos los modelos</SelectItem>
-                {models.map((model) => (
-                  <SelectItem key={model} value={model}>
-                    {model}
+                <SelectItem value="all">Todos los años</SelectItem>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year}>
+                    {year}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -109,41 +88,20 @@ export function CarSearch() {
           </div>
 
           <div>
-            <Label>Año</Label>
-            <Input
-              type="number"
-              placeholder="Ej: 2020"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              min="1900"
-              max={new Date().getFullYear()}
-            />
-          </div>
-
-          <div>
-            <Label>Kilometraje Máximo: {maxMileage.toLocaleString()} km</Label>
-            <Slider
-              value={[maxMileage]}
-              onValueChange={([value]) => setMaxMileage(value)}
-              max={300000}
-              step={5000}
-              className="mt-2"
-            />
-          </div>
-
-          <div>
-            <Label>Rango de Precio (RD$)</Label>
-            <Slider
-              value={priceRange}
-              onValueChange={(value) => setPriceRange(value as [number, number])}
-              max={5000000}
-              step={50000}
-              className="mt-2"
-            />
-            <div className="flex justify-between mt-2 text-sm">
-              <span>RD$ {priceRange[0].toLocaleString()}</span>
-              <span>RD$ {priceRange[1].toLocaleString()}</span>
-            </div>
+            <Label>Rango de Precio</Label>
+            <Select value={priceRange} onValueChange={setPriceRange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Precio" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los precios</SelectItem>
+                {priceRanges.map((range) => (
+                  <SelectItem key={range.value} value={range.value}>
+                    {range.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
