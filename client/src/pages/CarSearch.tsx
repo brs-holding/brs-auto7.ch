@@ -8,24 +8,33 @@ import { useState } from "react";
 import { Car } from "@db/schema";
 
 export function CarSearch() {
-  const [priceRange, setPriceRange] = useState([0, 5000000]);
   const [brand, setBrand] = useState<string>("");
-  const [search, setSearch] = useState<string>("");
+  const [model, setModel] = useState<string>("");
+  const [year, setYear] = useState<string>("");
+  const [maxMileage, setMaxMileage] = useState<number>(300000);
+  const [priceRange, setPriceRange] = useState([0, 5000000]);
 
   const { data: cars, isLoading } = useQuery<Car[]>({
     queryKey: ["/api/cars"],
   });
 
   const filteredCars = cars?.filter((car) => {
-    const matchesSearch = search 
-      ? `${car.brand} ${car.model}`.toLowerCase().includes(search.toLowerCase())
-      : true;
     const matchesBrand = brand ? car.brand === brand : true;
+    const matchesModel = model ? car.model === model : true;
+    const matchesYear = year ? car.year.toString() === year : true;
+    const matchesMileage = car.mileage <= maxMileage;
     const matchesPrice = car.price >= priceRange[0] && car.price <= priceRange[1];
-    return matchesSearch && matchesBrand && matchesPrice;
+    return matchesBrand && matchesModel && matchesYear && matchesMileage && matchesPrice;
   });
 
-  const brands = Array.from(new Set(cars?.map((car) => car.brand) || []));
+  const brands = Array.from(new Set(cars?.map((car) => car.brand) || [])).sort();
+  const models = Array.from(
+    new Set(
+      cars
+        ?.filter((car) => (brand ? car.brand === brand : true))
+        .map((car) => car.model) || []
+    )
+  ).sort();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -35,22 +44,16 @@ export function CarSearch() {
         {/* Filters */}
         <div className="space-y-6">
           <div>
-            <Label>Buscar</Label>
-            <Input
-              placeholder="Marca o modelo..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <div>
             <Label>Marca</Label>
-            <Select value={brand} onValueChange={setBrand}>
+            <Select value={brand} onValueChange={(value) => {
+              setBrand(value);
+              setModel(""); // Reset model when brand changes
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Todas las marcas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las marcas</SelectItem>
+                <SelectItem value="_all">Todas las marcas</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
@@ -58,6 +61,46 @@ export function CarSearch() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label>Modelo</Label>
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos los modelos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all">Todos los modelos</SelectItem>
+                {models.map((model) => (
+                  <SelectItem key={model} value={model}>
+                    {model}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Año</Label>
+            <Input
+              type="number"
+              placeholder="Ej: 2020"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              min="1900"
+              max={new Date().getFullYear()}
+            />
+          </div>
+
+          <div>
+            <Label>Kilometraje Máximo: {maxMileage.toLocaleString()} km</Label>
+            <Slider
+              value={[maxMileage]}
+              onValueChange={([value]) => setMaxMileage(value)}
+              max={300000}
+              step={5000}
+              className="mt-2"
+            />
           </div>
 
           <div>
