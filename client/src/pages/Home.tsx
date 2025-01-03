@@ -12,21 +12,26 @@ import { Car, Truck, Bike, CaravanIcon, Search } from "lucide-react";
 import { FinanceCalculator } from "@/components/FinanceCalculator";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Car as CarType } from "@db/schema";
+import { CarModel } from "@db/schema";
 
 export function Home() {
   const [brand, setBrand] = useState("all");
+  const [model, setModel] = useState("all");
   const [year, setYear] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
 
-  const { data: cars } = useQuery<CarType[]>({
-    queryKey: ["/api/cars"],
+  const { data: carModels } = useQuery<CarModel[]>({
+    queryKey: ["/api/car-models"],
   });
 
-  const brands = Array.from(new Set(cars?.map((car) => car.brand) || [])).sort();
+  const brands = Array.from(new Set(carModels?.map((model) => model.make) || [])).sort();
+  const models = carModels
+    ?.filter((carModel) => brand === "all" || carModel.make === brand)
+    .map((carModel) => carModel.model) || [];
+
   const years = Array.from(
-    new Set(cars?.map((car) => car.year.toString()) || [])
-  ).sort((a, b) => parseInt(b) - parseInt(a));
+    new Set(Array.from({ length: 2025 - 1990 + 1 }, (_, i) => (2025 - i).toString()))
+  );
 
   const priceRanges = [
     { label: "Hasta RD$ 500,000", value: "0-500000" },
@@ -35,11 +40,10 @@ export function Home() {
     { label: "Más de RD$ 2,000,000", value: "2000000-999999999" },
   ];
 
-  const totalCars = cars?.length || 0;
-
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (brand && brand !== "all") params.append("brand", brand);
+    if (model && model !== "all") params.append("model", model);
     if (year && year !== "all") params.append("year", year);
     if (priceRange && priceRange !== "all") params.append("price", priceRange);
     window.location.href = `/search?${params.toString()}`;
@@ -67,13 +71,27 @@ export function Home() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Select value={brand} onValueChange={setBrand}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Marca & Modelo" />
+                    <SelectValue placeholder="Marca" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas las marcas</SelectItem>
                     {brands.map((brand) => (
                       <SelectItem key={brand} value={brand}>
                         {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={model} onValueChange={setModel}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Modelo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los modelos</SelectItem>
+                    {models.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -109,7 +127,7 @@ export function Home() {
 
                 <Button onClick={handleSearch} className="w-full" size="lg">
                   <Search className="h-4 w-4 mr-2" />
-                  {totalCars.toLocaleString()} Resultados
+                  Buscar
                 </Button>
               </div>
             </CardContent>
