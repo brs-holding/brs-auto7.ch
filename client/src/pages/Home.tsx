@@ -24,10 +24,15 @@ export function Home() {
     queryKey: ["/api/car-models"],
   });
 
-  const brands = Array.from(new Set(carModels?.map((model) => model.make) || [])).sort();
+  // Sort makes alphabetically
+  const brands = Array.from(new Set(carModels?.map((model) => model.make) || []))
+    .sort((a, b) => a.localeCompare(b));
+
+  // Filter and sort models alphabetically for the selected make
   const models = carModels
     ?.filter((carModel) => brand === "all" || carModel.make === brand)
-    .map((carModel) => carModel.model) || [];
+    .map((carModel) => carModel.model)
+    .sort((a, b) => a.localeCompare(b)) || [];
 
   const years = Array.from(
     new Set(Array.from({ length: 2025 - 1990 + 1 }, (_, i) => (2025 - i).toString()))
@@ -47,6 +52,12 @@ export function Home() {
     if (year && year !== "all") params.append("year", year);
     if (priceRange && priceRange !== "all") params.append("price", priceRange);
     window.location.href = `/search?${params.toString()}`;
+  };
+
+  // Reset model when brand changes
+  const handleBrandChange = (value: string) => {
+    setBrand(value);
+    setModel("all");
   };
 
   return (
@@ -69,7 +80,7 @@ export function Home() {
           <Card className="max-w-4xl mx-auto shadow-lg">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Select value={brand} onValueChange={setBrand}>
+                <Select value={brand} onValueChange={handleBrandChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Marca" />
                   </SelectTrigger>
