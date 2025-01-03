@@ -18,7 +18,7 @@ export function CarSearch() {
   const [model, setModel] = useState<string>("");
   const [year, setYear] = useState<string>("");
   const [maxMileage, setMaxMileage] = useState<number>(300000);
-  const [priceRange, setPriceRange] = useState([0, 5000000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
 
   const { data: cars, isLoading } = useQuery<Car[]>({
     queryKey: ["/api/cars"],
@@ -44,8 +44,8 @@ export function CarSearch() {
     const matchesBrand = brand ? car.brand === brand : true;
     const matchesModel = model ? car.model === model : true;
     const matchesYear = year ? car.year.toString() === year : true;
-    const matchesMileage = car.mileage <= maxMileage;
-    const matchesPrice = car.price >= priceRange[0] && car.price <= priceRange[1];
+    const matchesMileage = Number(car.mileage) <= maxMileage;
+    const matchesPrice = Number(car.price) >= priceRange[0] && Number(car.price) <= priceRange[1];
     return matchesQuery && matchesBrand && matchesModel && matchesYear && matchesMileage && matchesPrice;
   });
 
@@ -135,7 +135,7 @@ export function CarSearch() {
             <Label>Rango de Precio (RD$)</Label>
             <Slider
               value={priceRange}
-              onValueChange={setPriceRange}
+              onValueChange={(value) => setPriceRange(value as [number, number])}
               max={5000000}
               step={50000}
               className="mt-2"
