@@ -9,7 +9,27 @@ const resources = {
       // Navigation
       "nav.vehicles": "Fahrzeuge",
       "nav.dealerships": "Autohäuser",
-      
+
+      // Dealership Plans
+      "plans.title": "Händler-Pakete",
+      "plans.subtitle": "Finden Sie das perfekte Paket für Ihr Geschäft",
+      "plans.monthly": "/Monat",
+      "plans.mostPopular": "Beliebteste Wahl",
+      "plans.selectPlan": "Paket wählen",
+      "plans.registration": "Anmeldung für",
+      "plans.package": "-Paket",
+      "plans.dealershipName": "Name des Autohauses",
+      "plans.email": "E-Mail",
+      "plans.phone": "Telefon",
+      "plans.address": "Adresse",
+      "plans.required": "Dieses Feld ist erforderlich",
+      "plans.processing": "Wird verarbeitet...",
+      "plans.confirm": "Anmeldung bestätigen",
+      "plans.success": "Anmeldung erfolgreich!",
+      "plans.successMessage": "Wir werden uns in Kürze mit Ihnen in Verbindung setzen.",
+      "plans.error": "Fehler",
+      "plans.errorMessage": "Die Anmeldung konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.",
+
       // Home page
       "home.new": "NEU",
       "home.directSelling": "Auto7.ch Direkt",
@@ -28,14 +48,14 @@ const resources = {
       "home.price.50kTo100k": "CHF 50.000 - 100.000",
       "home.price.100kTo200k": "CHF 100.000 - 200.000",
       "home.price.over200k": "Über CHF 200.000",
-      
+
       // Vehicle categories
       "category.cars": "Autos",
       "category.suv": "SUV",
       "category.trucks": "Lastwagen",
       "category.motorcycles": "Motorräder",
       "category.vans": "Transporter",
-      
+
       // Features section
       "features.whyAuto7": "Warum Auto7.ch?",
       "features.easySearch": "Einfache Suche",
@@ -44,16 +64,7 @@ const resources = {
       "features.qualityGuaranteeDesc": "Alle Fahrzeuge werden von Experten geprüft",
       "features.financing": "Finanzierung",
       "features.financingDesc": "Flexible Finanzierungsoptionen nach Ihren Bedürfnissen",
-      
-      // Finance Calculator
-      "calculator.title": "Berechnen Sie Ihre Finanzierung",
-      "calculator.vehiclePrice": "Fahrzeugpreis (CHF)",
-      "calculator.downPayment": "Anzahlung (CHF)",
-      "calculator.term": "Laufzeit (Monate)",
-      "calculator.interestRate": "Zinssatz (%)",
-      "calculator.calculate": "Berechnen",
-      "calculator.monthlyPayment": "Geschätzte monatliche Rate",
-      
+
       // Footer
       "footer.about": "Ihr vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in der Schweiz.",
       "footer.links": "Links",
@@ -61,7 +72,7 @@ const resources = {
       "footer.contact": "Kontakt",
       "footer.followUs": "Folgen Sie uns",
       "footer.rights": "Alle Rechte vorbehalten.",
-      
+
       // Language selector
       "language.de": "Deutsch",
       "language.en": "English",
@@ -74,7 +85,27 @@ const resources = {
       // Navigation
       "nav.vehicles": "Vehicles",
       "nav.dealerships": "Dealerships",
-      
+
+      // Dealership Plans
+      "plans.title": "Dealership Plans",
+      "plans.subtitle": "Find the perfect plan for your business",
+      "plans.monthly": "/month",
+      "plans.mostPopular": "Most Popular",
+      "plans.selectPlan": "Select Plan",
+      "plans.registration": "Registration for",
+      "plans.package": "Package",
+      "plans.dealershipName": "Dealership Name",
+      "plans.email": "Email",
+      "plans.phone": "Phone",
+      "plans.address": "Address",
+      "plans.required": "This field is required",
+      "plans.processing": "Processing...",
+      "plans.confirm": "Confirm Registration",
+      "plans.success": "Registration Successful!",
+      "plans.successMessage": "We will contact you shortly.",
+      "plans.error": "Error",
+      "plans.errorMessage": "Registration could not be processed. Please try again.",
+
       // Home page
       "home.new": "NEW",
       "home.directSelling": "Auto7.ch Direct",
@@ -93,14 +124,14 @@ const resources = {
       "home.price.50kTo100k": "CHF 50,000 - 100,000",
       "home.price.100kTo200k": "CHF 100,000 - 200,000",
       "home.price.over200k": "Over CHF 200,000",
-      
+
       // Vehicle categories
       "category.cars": "Cars",
       "category.suv": "SUV",
       "category.trucks": "Trucks",
       "category.motorcycles": "Motorcycles",
       "category.vans": "Vans",
-      
+
       // Features section
       "features.whyAuto7": "Why Auto7.ch?",
       "features.easySearch": "Easy Search",
@@ -109,16 +140,7 @@ const resources = {
       "features.qualityGuaranteeDesc": "All vehicles are inspected by experts",
       "features.financing": "Financing",
       "features.financingDesc": "Flexible financing options tailored to your needs",
-      
-      // Finance Calculator
-      "calculator.title": "Calculate Your Financing",
-      "calculator.vehiclePrice": "Vehicle Price (CHF)",
-      "calculator.downPayment": "Down Payment (CHF)",
-      "calculator.term": "Term (Months)",
-      "calculator.interestRate": "Interest Rate (%)",
-      "calculator.calculate": "Calculate",
-      "calculator.monthlyPayment": "Estimated Monthly Payment",
-      
+
       // Footer
       "footer.about": "Your trusted marketplace for buying and selling vehicles in Switzerland.",
       "footer.links": "Links",
@@ -126,7 +148,7 @@ const resources = {
       "footer.contact": "Contact",
       "footer.followUs": "Follow Us",
       "footer.rights": "All Rights Reserved.",
-      
+
       // Language selector
       "language.de": "German",
       "language.en": "English",
