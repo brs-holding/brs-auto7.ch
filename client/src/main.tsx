@@ -5,6 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import App from './App';
 import "./index.css";
+import "./lib/i18n"; // Initialize i18n
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

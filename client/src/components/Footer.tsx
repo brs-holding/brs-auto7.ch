@@ -1,7 +1,10 @@
 import { Link } from "wouter";
 import { FacebookIcon, InstagramIcon, TwitterIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-12">
@@ -9,28 +12,28 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Auto7.ch</h3>
             <p className="text-sm">
-              Ihr vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in der Schweiz.
+              {t("footer.about")}
             </p>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Links</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.links")}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/search">
-                  <a className="text-sm hover:underline">Autos Suchen</a>
+                  <a className="text-sm hover:underline">{t("footer.searchCars")}</a>
                 </Link>
               </li>
               <li>
                 <Link href="/dealerships">
-                  <a className="text-sm hover:underline">Autohäuser</a>
+                  <a className="text-sm hover:underline">{t("nav.dealerships")}</a>
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Kontakt</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.contact")}</h3>
             <ul className="space-y-2 text-sm">
               <li>Zürich, Schweiz</li>
               <li>Tel: +41 79 893 10 91</li>
@@ -39,7 +42,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-4">Folgen Sie uns</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.followUs")}</h3>
             <div className="flex space-x-4">
               <a href="#" className="hover:text-primary-foreground/80">
                 <FacebookIcon className="h-6 w-6" />
@@ -55,7 +58,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-primary-foreground/20 text-sm text-center">
-          <p>&copy; {new Date().getFullYear()} Auto7.ch. Alle Rechte vorbehalten.</p>
+          <p>&copy; {new Date().getFullYear()} Auto7.ch. {t("footer.rights")}</p>
         </div>
       </div>
     </footer>
