@@ -13,7 +13,7 @@ const MemoryStore = createMemoryStore(session);
 // Extend Express.User
 declare global {
   namespace Express {
-    interface User extends User {}
+    interface User extends Omit<User, 'password'> {}
   }
 }
 
@@ -44,6 +44,7 @@ export async function setupAuth(app: Express) {
     },
     async (email: string, password: string, done) => {
       try {
+        console.log('Attempting login with email:', email);
         const [user] = await db
           .select()
           .from(users)
@@ -51,34 +52,50 @@ export async function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
+          console.log('User not found with email:', email);
           return done(null, false, { message: "Incorrect email." });
         }
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
+          console.log('Invalid password for user:', email);
           return done(null, false, { message: "Incorrect password." });
         }
 
-        return done(null, user);
+        console.log('Login successful for user:', email);
+        return done(null, {
+          id: user.id,
+          email: user.email,
+          username: user.username
+        });
       } catch (err) {
+        console.error('Login error:', err);
         return done(err);
       }
     }
   ));
 
   passport.serializeUser((user: Express.User, done) => {
+    console.log('Serializing user:', user.id);
     done(null, user.id);
   });
 
   passport.deserializeUser(async (id: number, done) => {
     try {
+      console.log('Deserializing user:', id);
       const [user] = await db
-        .select()
+        .select({
+          id: users.id,
+          email: users.email,
+          username: users.username
+        })
         .from(users)
         .where(eq(users.id, id))
         .limit(1);
+
       done(null, user);
     } catch (err) {
+      console.error('Deserialization error:', err);
       done(err);
     }
   });
@@ -86,8 +103,10 @@ export async function setupAuth(app: Express) {
   // Authentication routes
   app.post("/api/register", async (req, res) => {
     try {
+      console.log('Registration request:', req.body);
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
+        console.error('Validation failed:', result.error.issues);
         return res.status(400).json({
           error: "Validation failed",
           details: result.error.issues
@@ -104,6 +123,7 @@ export async function setupAuth(app: Express) {
         .limit(1);
 
       if (existingUser.length > 0) {
+        console.log('Email already registered:', email);
         return res.status(400).json({ error: "Email already registered" });
       }
 
@@ -120,8 +140,14 @@ export async function setupAuth(app: Express) {
         })
         .returning();
 
+      console.log('User created:', newUser.id);
+
       // Log the user in
-      req.login(newUser, (err) => {
+      req.login({
+        id: newUser.id,
+        email: newUser.email,
+        username: newUser.username
+      }, (err) => {
         if (err) {
           console.error("Login error after registration:", err);
           return res.status(500).json({ error: "Error logging in after registration" });
@@ -142,12 +168,14 @@ export async function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
+    console.log('Login request:', req.body);
     passport.authenticate("local", (err: any, user: Express.User | false, info: any) => {
       if (err) {
         console.error("Login error:", err);
         return next(err);
       }
       if (!user) {
+        console.log('Authentication failed:', info.message);
         return res.status(401).json({ error: info.message || "Authentication failed" });
       }
       req.login(user, (err) => {
@@ -155,6 +183,7 @@ export async function setupAuth(app: Express) {
           console.error("Login session error:", err);
           return next(err);
         }
+        console.log('Login successful for user:', user.id);
         return res.json({
           message: "Login successful",
           user: {
@@ -168,10 +197,14 @@ export async function setupAuth(app: Express) {
   });
 
   app.post("/api/logout", (req, res) => {
+    const userId = req.user?.id;
+    console.log('Logout request for user:', userId);
     req.logout((err) => {
       if (err) {
+        console.error('Logout error:', err);
         return res.status(500).json({ error: "Error logging out" });
       }
+      console.log('Logout successful for user:', userId);
       res.json({ message: "Logged out successfully" });
     });
   });
@@ -179,12 +212,14 @@ export async function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user as Express.User;
+      console.log('Current user:', user.id);
       return res.json({
         id: user.id,
         email: user.email,
         username: user.username
       });
     }
+    console.log('No authenticated user');
     res.status(401).json({ error: "Not authenticated" });
   });
 }
