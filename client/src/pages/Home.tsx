@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Car, Truck, Bike, CaravanIcon, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { FinanceCalculator } from "@/components/FinanceCalculator";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,6 @@ import { useTranslation } from "react-i18next";
 
 export function Home() {
   const { t } = useTranslation();
-  const [, setLocation] = useLocation();
   const [brand, setBrand] = useState("all");
   const [model, setModel] = useState("all");
   const [year, setYear] = useState("all");
@@ -48,7 +47,6 @@ export function Home() {
     enabled: brand !== "all",
   });
 
-  // Generate years from 1990 to current year
   const years = Array.from(
     { length: 2025 - 1990 + 1 },
     (_, i) => (2025 - i).toString()
@@ -61,36 +59,33 @@ export function Home() {
     { label: t("home.price.over200k"), value: "200000-999999999" },
   ];
 
-  const handleSearch = () => {
-    try {
-      const params = new URLSearchParams();
-
-      if (brand !== "all") {
-        params.append("make", brand);
-      }
-      if (model !== "all") {
-        params.append("model", model);
-      }
-      if (year !== "all") {
-        params.append("year", year);
-      }
-      if (priceRange !== "all") {
-        const [min, max] = priceRange.split("-");
-        if (min) params.append("minPrice", min);
-        if (max) params.append("maxPrice", max);
-      }
-
-      const queryString = params.toString();
-      const searchUrl = `/search${queryString ? `?${queryString}` : ''}`;
-      setLocation(searchUrl);
-    } catch (error) {
-      console.error("Error during search:", error);
-    }
-  };
-
   const handleBrandChange = (value: string) => {
     setBrand(value);
     setModel("all"); // Reset model when brand changes
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const params = new URLSearchParams();
+
+    if (brand !== "all") {
+      params.append("make", brand);
+    }
+    if (model !== "all") {
+      params.append("model", model);
+    }
+    if (year !== "all") {
+      params.append("year", year);
+    }
+    if (priceRange !== "all") {
+      const [min, max] = priceRange.split("-");
+      if (min) params.append("minPrice", min);
+      if (max) params.append("maxPrice", max);
+    }
+
+    const searchPath = `/search${params.toString() ? `?${params.toString()}` : ''}`;
+    window.location.href = searchPath;
   };
 
   return (
@@ -109,90 +104,72 @@ export function Home() {
 
           <Card className="max-w-4xl mx-auto shadow-lg">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Select value={brand} onValueChange={handleBrandChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("home.brand")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("home.allBrands")}</SelectItem>
-                    {makes.map((make) => (
-                      <SelectItem key={make} value={make}>
-                        {make}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <form onSubmit={handleSearch}>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Select value={brand} onValueChange={handleBrandChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("home.brand")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("home.allBrands")}</SelectItem>
+                      {makes.map((make) => (
+                        <SelectItem key={make} value={make}>
+                          {make}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={model} onValueChange={setModel}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("home.model")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("home.allModels")}</SelectItem>
-                    {models.map((model) => (
-                      <SelectItem key={model} value={model}>
-                        {model}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={model} onValueChange={setModel}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("home.model")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("home.allModels")}</SelectItem>
+                      {models.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={year} onValueChange={setYear}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("home.year")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("home.allYears")}</SelectItem>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={year} onValueChange={setYear}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("home.year")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("home.allYears")}</SelectItem>
+                      {years.map((year) => (
+                        <SelectItem key={year} value={year}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={priceRange} onValueChange={setPriceRange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("home.price")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("home.allPrices")}</SelectItem>
-                    {priceRanges.map((range) => (
-                      <SelectItem key={range.value} value={range.value}>
-                        {range.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={priceRange} onValueChange={setPriceRange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("home.price")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("home.allPrices")}</SelectItem>
+                      {priceRanges.map((range) => (
+                        <SelectItem key={range.value} value={range.value}>
+                          {range.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Button onClick={handleSearch} className="w-full md:col-span-4" size="lg">
-                  <Search className="h-4 w-4 mr-2" />
-                  {t("home.search")}
-                </Button>
-              </div>
+                  <Button type="submit" className="w-full md:col-span-4" size="lg">
+                    <Search className="h-4 w-4 mr-2" />
+                    {t("home.search")}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-8">
-            {[
-              { type: "car", icon: Car, label: t("category.cars") },
-              { type: "suv", icon: Car, label: t("category.suv") },
-              { type: "truck", icon: Truck, label: t("category.trucks") },
-              { type: "motorcycle", icon: Bike, label: t("category.motorcycles") },
-              { type: "van", icon: CaravanIcon, label: t("category.vans") },
-            ].map(({ type, icon: Icon, label }) => (
-              <Link 
-                key={type} 
-                href={`/search?type=${type}`}
-              >
-                <a className="flex flex-col items-center p-4 hover:bg-muted rounded-lg transition-colors">
-                  <Icon className="h-8 w-8 mb-2" />
-                  <span className="text-sm">{label}</span>
-                </a>
-              </Link>
-            ))}
-          </div>
 
           {/* Features Section */}
           <div className="mt-12">

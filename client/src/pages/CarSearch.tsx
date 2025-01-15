@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CarListing } from "../types/car";
 
@@ -15,7 +14,16 @@ export function CarSearch() {
   const [make, setMake] = useState<string>(searchParams.get('make') || "all");
   const [model, setModel] = useState<string>(searchParams.get('model') || "all");
   const [year, setYear] = useState<string>(searchParams.get('year') || "all");
-  const [priceRange, setPriceRange] = useState<string>(searchParams.get('price') || "all");
+  const [priceRange, setPriceRange] = useState<string>("all");
+
+  // Set initial price range from URL parameters
+  useEffect(() => {
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    if (minPrice && maxPrice) {
+      setPriceRange(`${minPrice}-${maxPrice}`);
+    }
+  }, []);
 
   // Fetch available car makes
   const { data: makes = [] } = useQuery<string[]>({
@@ -53,9 +61,10 @@ export function CarSearch() {
       if (year !== "all") params.append("year", year);
       if (priceRange !== "all") {
         const [min, max] = priceRange.split('-');
-        params.append("minPrice", min);
-        params.append("maxPrice", max);
+        if (min) params.append("minPrice", min);
+        if (max) params.append("maxPrice", max);
       }
+
       const response = await fetch(`/api/cars?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch car listings');
@@ -64,11 +73,24 @@ export function CarSearch() {
     }
   });
 
+  const handleFilter = () => {
+    const params = new URLSearchParams();
+    if (make !== "all") params.append("make", make);
+    if (model !== "all") params.append("model", model);
+    if (year !== "all") params.append("year", year);
+    if (priceRange !== "all") {
+      const [min, max] = priceRange.split('-');
+      if (min) params.append("minPrice", min);
+      if (max) params.append("maxPrice", max);
+    }
+
+    window.location.href = `/search?${params.toString()}`;
+  };
+
   const handleMakeChange = (value: string) => {
     setMake(value);
     setModel("all"); // Reset model when make changes
 
-    // Update URL
     const params = new URLSearchParams(location.split('?')[1]);
     if (value !== "all") {
       params.set("make", value);
@@ -104,10 +126,10 @@ export function CarSearch() {
         {/* Model filter */}
         <Select value={model} onValueChange={setModel}>
           <SelectTrigger>
-            <SelectValue placeholder={t('search.model')} />
+            <SelectValue placeholder={t('home.model')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t('search.allModels')}</SelectItem>
+            <SelectItem value="all">{t('home.allModels')}</SelectItem>
             {models.map((modelName) => (
               <SelectItem key={modelName} value={modelName}>
                 {modelName}
@@ -115,6 +137,25 @@ export function CarSearch() {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Year filter */}
+        <Select value={year} onValueChange={setYear}>
+          <SelectTrigger>
+            <SelectValue placeholder={t('home.year')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('home.allYears')}</SelectItem>
+            {Array.from({ length: 2025 - 1990 + 1 }, (_, i) => (2025 - i).toString()).map((y) => (
+              <SelectItem key={y} value={y}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button onClick={handleFilter}>
+          {t('home.search')}
+        </Button>
 
         {/* Results */}
         <div className="md:col-span-4">
