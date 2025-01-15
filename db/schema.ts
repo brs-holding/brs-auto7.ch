@@ -19,7 +19,7 @@ export const carModels = pgTable("car_models", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Create Zod schemas
+// Create Zod schemas for validation
 export const insertCarModelSchema = createInsertSchema(carModels);
 export const selectCarModelSchema = createSelectSchema(carModels);
 
