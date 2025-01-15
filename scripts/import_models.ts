@@ -8,7 +8,9 @@ const MAX_RETRIES = 3;
 
 async function importCarModels() {
   console.log('Starting import process...');
-  const sqlFile = fs.readFileSync('attached_assets/Car-Models-List-by-Teoalida-Worldwide-version (1).sql', 'utf-8');
+  try {
+    const sqlFile = fs.readFileSync('attached_assets/Car-Models-List-by-Teoalida-Worldwide-version (1).sql', 'utf-8');
+    console.log('SQL file loaded successfully');
 
   // Find the INSERT statements
   const insertStart = sqlFile.indexOf('INSERT INTO');
