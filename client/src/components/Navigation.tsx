@@ -12,7 +12,7 @@ export function Navigation() {
         <nav className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/">
-              <a className="text-2xl font-bold text-primary mr-8">CarrosRD</a>
+              <a className="text-2xl font-bold text-primary mr-8">AutosRD</a>
             </Link>
           </div>
 
@@ -46,11 +46,11 @@ export function Navigation() {
               <Link href="/search">
                 <a className="flex items-center px-4 py-2 hover:bg-gray-100 rounded-md">
                   <Car className="h-4 w-4 mr-2" />
-                  Vehículos
+                  Fahrzeuge
                 </a>
               </Link>
               <Link href="/dealerships">
-                <a className="px-4 py-2 hover:bg-gray-100 rounded-md">Concesionarios</a>
+                <a className="px-4 py-2 hover:bg-gray-100 rounded-md">Autohäuser</a>
               </Link>
             </div>
           </div>
