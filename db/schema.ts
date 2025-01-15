@@ -35,6 +35,8 @@ export const carListings = pgTable("car_listings", {
   dealershipPhone: text("dealership_phone"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  make: text("make"), 
+  model: text("model"), 
 });
 
 // Create Zod schemas for validation
@@ -45,11 +47,12 @@ export const insertCarListingSchema = createInsertSchema(carListings);
 export const selectCarListingSchema = createSelectSchema(carListings);
 
 // Export types
-export const carModelRelations = {
-  listings: () => carListings
-};
-
 export type CarModel = typeof carModels.$inferSelect;
 export type InsertCarModel = typeof carModels.$inferInsert;
 export type CarListing = typeof carListings.$inferSelect;
 export type InsertCarListing = typeof carListings.$inferInsert;
+
+// Export relations
+export const carModelRelations = {
+  listings: () => carListings
+};
