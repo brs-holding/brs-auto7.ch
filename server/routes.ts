@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
 import { carModels, carListings } from "@db/schema";
-import { eq, sql, ilike, and } from "drizzle-orm";
+import { eq, sql, ilike, and, desc } from "drizzle-orm";
 
 export function registerRoutes(app: Express): Server {
   // Get all unique car makes
@@ -33,52 +33,38 @@ export function registerRoutes(app: Express): Server {
       const { make, model, minYear, maxYear, minPrice, maxPrice } = req.query;
       console.log(`Searching car listings with params:`, req.query);
 
-      const query = db
-        .select({
-          id: carListings.id,
-          listingId: carListings.listingId,
-          price: carListings.price,
-          year: carListings.year,
-          mileage: carListings.mileage,
-          fuelType: carListings.fuelType,
-          transmission: carListings.transmission,
-          driveType: carListings.driveType,
-          features: carListings.features,
-          dealershipName: carListings.dealershipName,
-          dealershipAddress: carListings.dealershipAddress,
-          dealershipPhone: carListings.dealershipPhone,
-          make: carModels.make,
-          model: carModels.model,
-        })
+      let query = db
+        .select()
         .from(carListings)
-        .innerJoin(carModels, eq(carListings.carModelId, carModels.id));
+        .orderBy(desc(carListings.createdAt));
 
       // Apply filters only if they are provided
       const conditions = [];
       if (make) {
-        conditions.push(ilike(carModels.make, `%${make}%`));
+        conditions.push(ilike(carListings.make, `%${make}%`));
       }
       if (model) {
-        conditions.push(ilike(carModels.model, `%${model}%`));
+        conditions.push(ilike(carListings.model, `%${model}%`));
       }
       if (minYear) {
-        conditions.push(sql`${carListings.year} >= ${minYear}`);
+        conditions.push(sql`CAST(${carListings.year} AS INTEGER) >= ${parseInt(minYear as string)}`);
       }
       if (maxYear) {
-        conditions.push(sql`${carListings.year} <= ${maxYear}`);
+        conditions.push(sql`CAST(${carListings.year} AS INTEGER) <= ${parseInt(maxYear as string)}`);
       }
       if (minPrice) {
-        conditions.push(sql`${carListings.price} >= ${minPrice}`);
+        conditions.push(sql`CAST(${carListings.price} AS DECIMAL) >= ${parseFloat(minPrice as string)}`);
       }
       if (maxPrice) {
-        conditions.push(sql`${carListings.price} <= ${maxPrice}`);
+        conditions.push(sql`CAST(${carListings.price} AS DECIMAL) <= ${parseFloat(maxPrice as string)}`);
       }
 
       if (conditions.length > 0) {
-        query.where(and(...conditions));
+        query = query.where(and(...conditions));
       }
 
-      const listings = await query.orderBy(carListings.createdAt.desc());
+      console.log('Executing query...');
+      const listings = await query;
       console.log(`Found ${listings.length} matching listings`);
       res.json(listings);
     } catch (error) {
@@ -104,28 +90,6 @@ export function registerRoutes(app: Express): Server {
 
       console.log(`Successfully fetched ${models.length} models for ${make}`);
       res.json(models.map(m => m.model));
-    } catch (error) {
-      console.error("Error fetching car models:", error);
-      console.error("Error details:", error instanceof Error ? error.message : error);
-      res.status(500).json({ 
-        error: "Failed to fetch car models",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-  });
-
-  // Get all car models
-  app.get("/api/car-models", async (_req, res) => {
-    try {
-      console.log('Fetching all car models...');
-      const allCarModels = await db.select({
-        make: carModels.make,
-        model: carModels.model,
-        year: carModels.productionYears,
-      }).from(carModels);
-
-      console.log(`Successfully fetched ${allCarModels.length} car models`);
-      res.json(allCarModels);
     } catch (error) {
       console.error("Error fetching car models:", error);
       console.error("Error details:", error instanceof Error ? error.message : error);
