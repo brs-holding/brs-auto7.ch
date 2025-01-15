@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Auto7.ch</h3>
             <p className="text-sm">
-              Ihr vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in der Dominikanischen Republik.
+              Ihr vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in der Schweiz.
             </p>
           </div>
 
@@ -32,8 +32,8 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Kontakt</h3>
             <ul className="space-y-2 text-sm">
-              <li>Santo Domingo, Dominikanische Republik</li>
-              <li>Tel: (809) 555-0123</li>
+              <li>Zürich, Schweiz</li>
+              <li>Tel: +41 79 893 10 91</li>
               <li>E-Mail: info@auto7.ch</li>
             </ul>
           </div>
