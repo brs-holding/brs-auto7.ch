@@ -10,6 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useUser } from "@/hooks/use-user";
+import { Upload, X } from "lucide-react";
 
 const carRegistrationSchema = z.object({
   make: z.string().min(1, "Brand is required"),
@@ -31,7 +32,7 @@ export function CarRegistration() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const { user } = useUser();
-  
+
   // Fetch available car makes
   const { data: makes = [] } = useQuery<string[]>({
     queryKey: ["/api/car-makes"],
@@ -87,6 +88,43 @@ export function CarRegistration() {
     },
   });
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const imagePromises = Array.from(files).map((file) => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (typeof e.target?.result === 'string') {
+            resolve(e.target.result);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    try {
+      const base64Images = await Promise.all(imagePromises);
+      const currentImages = form.getValues("images");
+      form.setValue("images", [...currentImages, ...base64Images]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload images",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const currentImages = form.getValues("images");
+    form.setValue("images", currentImages.filter((_, i) => i !== index));
+  };
+
   const onSubmit = (data: CarRegistrationForm) => {
     if (!user) {
       toast({
@@ -119,9 +157,7 @@ export function CarRegistration() {
                   </FormControl>
                   <SelectContent>
                     {makes.map((make) => (
-                      <SelectItem key={make} value={make}>
-                        {make}
-                      </SelectItem>
+                      <SelectItem key={make} value={make}>{make}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -249,6 +285,44 @@ export function CarRegistration() {
                 </FormItem>
               )}
             />
+          </div>
+
+          <div className="space-y-2">
+            <FormLabel>Images</FormLabel>
+            <div className="flex flex-wrap gap-4 mb-4">
+              {form.watch("images").map((image, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={image}
+                    alt={`Car image ${index + 1}`}
+                    className="w-24 h-24 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="cursor-pointer">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <div className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80">
+                  <Upload className="h-4 w-4" />
+                  Upload Images
+                </div>
+              </label>
+              <FormMessage />
+            </div>
           </div>
 
           <FormField
