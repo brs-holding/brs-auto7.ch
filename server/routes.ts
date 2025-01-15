@@ -33,6 +33,8 @@ export function registerRoutes(app: Express): Server {
   // Register a new car
   app.post("/api/cars", isAuthenticated, async (req, res) => {
     try {
+      console.log('Received car registration request:', req.body);
+
       const {
         make,
         model,
@@ -49,10 +51,13 @@ export function registerRoutes(app: Express): Server {
 
       // Validate required fields
       if (!make || !model || !price || !year || !mileage) {
+        console.error('Missing required fields:', { make, model, price, year, mileage });
         return res.status(400).json({
           error: "Missing required fields"
         });
       }
+
+      console.log('Creating new car listing with user ID:', (req.user as any).id);
 
       const [newListing] = await db
         .insert(carListings)
