@@ -15,13 +15,13 @@ export function registerRoutes(app: Express): Server {
         .groupBy(carListings.make)
         .orderBy(carListings.make);
 
-      console.log(`Successfully fetched ${makes.length} car makes`);
-      res.json(makes.map(m => m.make));
+      const uniqueMakes = makes.map(m => m.make);
+      console.log(`Successfully fetched ${uniqueMakes.length} car makes:`, uniqueMakes);
+      res.json(uniqueMakes);
     } catch (error) {
       console.error("Error fetching car makes:", error);
       res.status(500).json({ 
-        error: "Failed to fetch car makes",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        error: "Failed to fetch car makes"
       });
     }
   });
@@ -39,13 +39,13 @@ export function registerRoutes(app: Express): Server {
         .groupBy(carListings.model)
         .orderBy(carListings.model);
 
-      console.log(`Successfully fetched ${models.length} models for ${make}`);
-      res.json(models.map(m => m.model));
+      const uniqueModels = models.map(m => m.model);
+      console.log(`Successfully fetched ${uniqueModels.length} models for ${make}:`, uniqueModels);
+      res.json(uniqueModels);
     } catch (error) {
       console.error("Error fetching car models:", error);
       res.status(500).json({ 
-        error: "Failed to fetch car models",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        error: "Failed to fetch car models"
       });
     }
   });
@@ -53,61 +53,47 @@ export function registerRoutes(app: Express): Server {
   // Get all car listings with optional search filters
   app.get("/api/cars", async (req, res) => {
     try {
-      const { make, model, minYear, maxYear, minPrice, maxPrice, type } = req.query;
-      console.log('Search parameters:', { make, model, minYear, maxYear, minPrice, maxPrice, type });
+      const { make, model, year, minPrice, maxPrice, type } = req.query;
+      console.log('Search parameters:', { make, model, year, minPrice, maxPrice, type });
 
       const conditions = [];
 
-      // Add make filter if specified
       if (make && make !== 'all') {
         conditions.push(eq(carListings.make, make as string));
       }
 
-      // Add model filter if specified
       if (model && model !== 'all') {
         conditions.push(eq(carListings.model, model as string));
       }
 
-      // Add year range filters
-      if (minYear) {
-        conditions.push(sql`${carListings.year} >= ${parseInt(minYear as string)}`);
-      }
-      if (maxYear) {
-        conditions.push(sql`${carListings.year} <= ${parseInt(maxYear as string)}`);
+      if (year) {
+        conditions.push(eq(carListings.year, parseInt(year as string)));
       }
 
-      // Add price range filters
       if (minPrice) {
         conditions.push(sql`${carListings.price} >= ${parseFloat(minPrice as string)}`);
       }
+
       if (maxPrice) {
         conditions.push(sql`${carListings.price} <= ${parseFloat(maxPrice as string)}`);
       }
 
-      // Add vehicle type filter if specified
-      if (type) {
+      if (type && type !== 'all') {
         conditions.push(eq(carListings.category, type as string));
       }
 
-      console.log('Executing search query...');
-      const listings = conditions.length > 0 
-        ? await db
-            .select()
-            .from(carListings)
-            .where(and(...conditions))
-            .orderBy(desc(carListings.createdAt))
-        : await db
-            .select()
-            .from(carListings)
-            .orderBy(desc(carListings.createdAt));
+      const query = conditions.length > 0 
+        ? db.select().from(carListings).where(and(...conditions))
+        : db.select().from(carListings);
+
+      const listings = await query.orderBy(desc(carListings.createdAt));
 
       console.log(`Found ${listings.length} matching listings`);
       res.json(listings);
     } catch (error) {
       console.error("Error searching car listings:", error);
       res.status(500).json({
-        error: "Failed to search car listings",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        error: "Failed to search car listings"
       });
     }
   });
@@ -118,6 +104,11 @@ export function registerRoutes(app: Express): Server {
       const { id } = req.params;
       console.log(`Fetching car details for ID: ${id}`);
 
+      if (!id || isNaN(parseInt(id))) {
+        res.status(400).json({ error: "Invalid car ID" });
+        return;
+      }
+
       const listing = await db
         .select()
         .from(carListings)
@@ -126,9 +117,7 @@ export function registerRoutes(app: Express): Server {
 
       if (!listing || listing.length === 0) {
         console.log(`No car found with ID: ${id}`);
-        res.status(404).json({
-          error: "Car listing not found"
-        });
+        res.status(404).json({ error: "Car listing not found" });
         return;
       }
 
@@ -137,8 +126,7 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error fetching car details:", error);
       res.status(500).json({
-        error: "Failed to fetch car details",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        error: "Failed to fetch car details"
       });
     }
   });
