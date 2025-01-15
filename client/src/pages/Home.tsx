@@ -16,10 +16,10 @@ import { useTranslation } from "react-i18next";
 
 export function Home() {
   const { t } = useTranslation();
-  const [brand, setBrand] = useState("all");
-  const [model, setModel] = useState("all");
-  const [year, setYear] = useState("all");
-  const [priceRange, setPriceRange] = useState("all");
+  const [brand, setBrand] = useState<string>("all");
+  const [model, setModel] = useState<string>("all");
+  const [year, setYear] = useState<string>("all");
+  const [priceRange, setPriceRange] = useState<string>("all");
 
   // Fetch car makes
   const { data: makes = [] } = useQuery<string[]>({
@@ -66,26 +66,30 @@ export function Home() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Search initiated with:", { brand, model, year, priceRange });
 
-    const params = new URLSearchParams();
+    const searchParams = new URLSearchParams();
 
     if (brand !== "all") {
-      params.append("make", brand);
+      searchParams.append("make", brand);
     }
     if (model !== "all") {
-      params.append("model", model);
+      searchParams.append("model", model);
     }
     if (year !== "all") {
-      params.append("year", year);
+      searchParams.append("year", year);
     }
     if (priceRange !== "all") {
       const [min, max] = priceRange.split("-");
-      if (min) params.append("minPrice", min);
-      if (max) params.append("maxPrice", max);
+      if (min) searchParams.append("minPrice", min);
+      if (max) searchParams.append("maxPrice", max);
     }
 
-    const searchPath = `/search${params.toString() ? `?${params.toString()}` : ''}`;
-    window.location.href = searchPath;
+    const queryString = searchParams.toString();
+    console.log("Generated search URL:", `/search${queryString ? `?${queryString}` : ''}`);
+
+    // Use window.location.href for a full page navigation with the search parameters
+    window.location.href = `/search${queryString ? `?${queryString}` : ''}`;
   };
 
   return (
