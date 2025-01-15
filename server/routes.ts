@@ -27,8 +27,8 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Search car listings
-  app.get("/api/car-listings/search", async (req, res) => {
+  // Get all car listings with optional search filters
+  app.get("/api/cars", async (req, res) => {
     try {
       const { make, model, minYear, maxYear, minPrice, maxPrice } = req.query;
       console.log(`Searching car listings with params:`, req.query);
@@ -53,7 +53,7 @@ export function registerRoutes(app: Express): Server {
         .from(carListings)
         .innerJoin(carModels, eq(carListings.carModelId, carModels.id));
 
-      // Apply filters
+      // Apply filters only if they are provided
       const conditions = [];
       if (make) {
         conditions.push(ilike(carModels.make, `%${make}%`));
@@ -78,7 +78,7 @@ export function registerRoutes(app: Express): Server {
         query.where(and(...conditions));
       }
 
-      const listings = await query;
+      const listings = await query.orderBy(carListings.createdAt.desc());
       console.log(`Found ${listings.length} matching listings`);
       res.json(listings);
     } catch (error) {
