@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface SubscriptionPlan {
   name: string;
@@ -70,6 +71,7 @@ const plans: SubscriptionPlan[] = [
 export function DealershipPlans() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<SubscriptionForm>();
 
   const subscription = useMutation({
@@ -84,16 +86,16 @@ export function DealershipPlans() {
     },
     onSuccess: () => {
       toast({
-        title: "Anmeldung erfolgreich!",
-        description: "Wir werden uns in Kürze mit Ihnen in Verbindung setzen.",
+        title: t("plans.success"),
+        description: t("plans.successMessage"),
       });
       reset();
       setSelectedPlan(null);
     },
     onError: () => {
       toast({
-        title: "Fehler",
-        description: "Die Anmeldung konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.",
+        title: t("plans.error"),
+        description: t("plans.errorMessage"),
         variant: "destructive",
       });
     },
@@ -110,9 +112,9 @@ export function DealershipPlans() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Händler-Pakete</h1>
+        <h1 className="text-4xl font-bold mb-4">{t("plans.title")}</h1>
         <p className="text-xl text-muted-foreground">
-          Finden Sie das perfekte Paket für Ihr Geschäft
+          {t("plans.subtitle")}
         </p>
       </div>
 
@@ -121,7 +123,7 @@ export function DealershipPlans() {
           <Card key={plan.name} className="relative overflow-hidden">
             {plan.name === "Premium" && (
               <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 rounded-bl-lg text-sm">
-                Beliebteste Wahl
+                {t("plans.mostPopular")}
               </div>
             )}
             <CardHeader>
@@ -129,7 +131,7 @@ export function DealershipPlans() {
               <p className="text-3xl font-bold">
                 CHF {plan.price.toLocaleString()}
                 <span className="text-sm font-normal text-muted-foreground">
-                  /Monat
+                  {t("plans.monthly")}
                 </span>
               </p>
             </CardHeader>
@@ -150,28 +152,31 @@ export function DealershipPlans() {
                     variant={plan.name === "Premium" ? "default" : "outline"}
                     onClick={() => setSelectedPlan(plan)}
                   >
-                    Paket wählen
+                    {t("plans.selectPlan")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Anmeldung für {plan.name}-Paket</DialogTitle>
+                    <DialogTitle>
+                      {t("plans.registration")} {plan.name}
+                      {t("plans.package")}
+                    </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
-                      <Label htmlFor="name">Name des Autohauses</Label>
+                      <Label htmlFor="name">{t("plans.dealershipName")}</Label>
                       <Input
                         id="name"
                         {...register("name", { required: true })}
                       />
                       {errors.name && (
                         <span className="text-sm text-destructive">
-                          Dieses Feld ist erforderlich
+                          {t("plans.required")}
                         </span>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="email">E-Mail</Label>
+                      <Label htmlFor="email">{t("plans.email")}</Label>
                       <Input
                         id="email"
                         type="email"
@@ -179,38 +184,38 @@ export function DealershipPlans() {
                       />
                       {errors.email && (
                         <span className="text-sm text-destructive">
-                          Dieses Feld ist erforderlich
+                          {t("plans.required")}
                         </span>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="phone">Telefon</Label>
+                      <Label htmlFor="phone">{t("plans.phone")}</Label>
                       <Input
                         id="phone"
                         {...register("phone", { required: true })}
                       />
                       {errors.phone && (
                         <span className="text-sm text-destructive">
-                          Dieses Feld ist erforderlich
+                          {t("plans.required")}
                         </span>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="address">Adresse</Label>
+                      <Label htmlFor="address">{t("plans.address")}</Label>
                       <Input
                         id="address"
                         {...register("address", { required: true })}
                       />
                       {errors.address && (
                         <span className="text-sm text-destructive">
-                          Dieses Feld ist erforderlich
+                          {t("plans.required")}
                         </span>
                       )}
                     </div>
                     <Button type="submit" className="w-full">
                       {subscription.isPending
-                        ? "Wird verarbeitet..."
-                        : "Anmeldung bestätigen"}
+                        ? t("plans.processing")
+                        : t("plans.confirm")}
                     </Button>
                   </form>
                 </DialogContent>
