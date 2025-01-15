@@ -59,37 +59,45 @@ export function Home() {
     { label: t("home.price.over200k"), value: "200000-999999999" },
   ];
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Base URL for search page
+    let searchUrl = "/search";
+
+    // Collect only the active filters
+    const activeFilters = [];
+
+    if (brand !== "all") {
+      activeFilters.push(`make=${encodeURIComponent(brand)}`);
+    }
+
+    if (model !== "all") {
+      activeFilters.push(`model=${encodeURIComponent(model)}`);
+    }
+
+    if (year !== "all") {
+      activeFilters.push(`year=${encodeURIComponent(year)}`);
+    }
+
+    if (priceRange !== "all") {
+      const [min, max] = priceRange.split("-");
+      if (min) activeFilters.push(`minPrice=${encodeURIComponent(min)}`);
+      if (max) activeFilters.push(`maxPrice=${encodeURIComponent(max)}`);
+    }
+
+    // Add query parameters if we have any active filters
+    if (activeFilters.length > 0) {
+      searchUrl += `?${activeFilters.join("&")}`;
+    }
+
+    // Navigate to search page
+    window.location.href = searchUrl;
+  };
+
   const handleBrandChange = (value: string) => {
     setBrand(value);
     setModel("all"); // Reset model when brand changes
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Search initiated with:", { brand, model, year, priceRange });
-
-    const searchParams = new URLSearchParams();
-
-    if (brand !== "all") {
-      searchParams.append("make", brand);
-    }
-    if (model !== "all") {
-      searchParams.append("model", model);
-    }
-    if (year !== "all") {
-      searchParams.append("year", year);
-    }
-    if (priceRange !== "all") {
-      const [min, max] = priceRange.split("-");
-      if (min) searchParams.append("minPrice", min);
-      if (max) searchParams.append("maxPrice", max);
-    }
-
-    const queryString = searchParams.toString();
-    console.log("Generated search URL:", `/search${queryString ? `?${queryString}` : ''}`);
-
-    // Use window.location.href for a full page navigation with the search parameters
-    window.location.href = `/search${queryString ? `?${queryString}` : ''}`;
   };
 
   return (
