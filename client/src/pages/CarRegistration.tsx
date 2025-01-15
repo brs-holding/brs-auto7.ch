@@ -57,17 +57,25 @@ export function CarRegistration() {
 
   const registerCar = useMutation({
     mutationFn: async (data: CarRegistrationForm) => {
+      const formattedData = {
+        ...data,
+        price: parseFloat(data.price.toString()),
+        year: parseInt(data.year.toString()),
+        mileage: parseInt(data.mileage.toString()),
+      };
+
       const response = await fetch("/api/cars", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formattedData),
         credentials: "include",
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to register car');
       }
 
       return response.json();
