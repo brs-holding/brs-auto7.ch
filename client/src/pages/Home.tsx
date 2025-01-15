@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 
 export function Home() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const [brand, setBrand] = useState("all");
   const [model, setModel] = useState("all");
   const [year, setYear] = useState("all");
@@ -61,22 +62,35 @@ export function Home() {
   ];
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (brand && brand !== "all") params.append("make", brand);
-    if (model && model !== "all") params.append("model", model);
-    if (year && year !== "all") params.append("year", year);
-    if (priceRange && priceRange !== "all") {
-      const [min, max] = priceRange.split("-");
-      params.append("minPrice", min);
-      params.append("maxPrice", max);
+    try {
+      const params = new URLSearchParams();
+
+      if (brand !== "all") {
+        params.append("make", brand);
+      }
+      if (model !== "all") {
+        params.append("model", model);
+      }
+      if (year !== "all") {
+        params.append("year", year);
+      }
+      if (priceRange !== "all") {
+        const [min, max] = priceRange.split("-");
+        if (min) params.append("minPrice", min);
+        if (max) params.append("maxPrice", max);
+      }
+
+      const queryString = params.toString();
+      const searchUrl = `/search${queryString ? `?${queryString}` : ''}`;
+      setLocation(searchUrl);
+    } catch (error) {
+      console.error("Error during search:", error);
     }
-    window.location.href = `/search?${params.toString()}`;
   };
 
-  // Reset model when brand changes
   const handleBrandChange = (value: string) => {
     setBrand(value);
-    setModel("all");
+    setModel("all"); // Reset model when brand changes
   };
 
   return (
@@ -168,7 +182,10 @@ export function Home() {
               { type: "motorcycle", icon: Bike, label: t("category.motorcycles") },
               { type: "van", icon: CaravanIcon, label: t("category.vans") },
             ].map(({ type, icon: Icon, label }) => (
-              <Link key={type} href={`/search?type=${type}`}>
+              <Link 
+                key={type} 
+                href={`/search?type=${type}`}
+              >
                 <a className="flex flex-col items-center p-4 hover:bg-muted rounded-lg transition-colors">
                   <Icon className="h-8 w-8 mb-2" />
                   <span className="text-sm">{label}</span>
