@@ -1,114 +1,79 @@
-
 import { db } from "@db";
 import { carModels } from "@db/schema";
 import fs from "fs";
 
-const BATCH_SIZE = 50; // Increased batch size for better performance
-const MAX_RETRIES = 3;
+const BATCH_SIZE = 100;
 
 async function importCarModels() {
   console.log('Starting import process...');
   try {
-    const sqlFile = fs.readFileSync('attached_assets/Car-Models-List-by-Teoalida-Worldwide-version (1).sql', 'utf-8');
+    const sqlFile = fs.readFileSync('attached_assets/Car-Models-List-by-Teoalida-Worldwide-version.sql', 'utf-8');
     console.log('SQL file loaded successfully');
 
-  // Find the INSERT statements
-  const insertStart = sqlFile.indexOf('INSERT INTO');
-  if (insertStart === -1) {
-    throw new Error('No INSERT statements found in SQL file');
-  }
+    // Extract INSERT statements
+    const insertRegex = /INSERT INTO[^;]+;/g;
+    const insertStatements = sqlFile.match(insertRegex) || [];
 
-  const insertContent = sqlFile.slice(insertStart);
-  // Match values between parentheses
-  const valuesRegex = /\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/g;
-  const matches = Array.from(insertContent.matchAll(valuesRegex));
-
-  let count = 0;
-  let errors = 0;
-  let batch = [];
-  let retryCount = 0;
-
-  console.log(`Found ${matches.length} total records to import`);
-
-  for (let i = 0; i < matches.length; i++) {
-    const match = matches[i];
-    const values = match[1]
-      .split(',')
-      .map(v => v.trim())
-      .map(v => {
-        if (v === 'NULL' || v === '') return null;
-        // Remove quotes and handle escaped quotes
-        return v.replace(/^'|'$/g, '').replace(/''/g, "'");
-      });
-
-    // Skip header or empty rows
-    if (!values[0] || values[0] === 'Make') continue;
-
-    try {
-      const record = {
-        make: values[0],
-        model: values[1] || '',
-        platform: values[2] || null,
-        classification: values[3] || null,
-        productionYears: values[4] || null,
-        countryOfOrigin: values[7] || null,
-        unitsProduced: values[11] || null,
-        notes: values[12] || null,
-      };
-
-      batch.push(record);
-
-      // Process batch when it reaches BATCH_SIZE or it's the last item
-      if (batch.length === BATCH_SIZE || i === matches.length - 1) {
-        let success = false;
-        while (!success && retryCount < MAX_RETRIES) {
-          try {
-            await db.transaction(async (tx) => {
-              await tx.insert(carModels).values(batch);
-            });
-            count += batch.length;
-            console.log(`Imported ${count}/${matches.length} models...`);
-            success = true;
-            retryCount = 0;
-          } catch (error) {
-            retryCount++;
-            if (retryCount >= MAX_RETRIES) {
-              console.error(`Failed to import batch after ${MAX_RETRIES} retries:`, error);
-              errors += batch.length;
-              break;
-            }
-            console.log(`Retry ${retryCount}/${MAX_RETRIES} for current batch...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
-          }
-        }
-        batch = [];
-      }
-    } catch (error) {
-      console.error(`Error processing record:`, error);
-      errors++;
+    if (insertStatements.length === 0) {
+      throw new Error('No INSERT statements found');
     }
-  }
 
-  console.log(`Import completed!`);
-  console.log(`Successfully imported ${count} models`);
-  if (errors > 0) {
-    console.log(`Failed to import ${errors} models`);
-  }
-}
+    console.log(`Found ${insertStatements.length} insert statements`);
 
-// Clear existing data before import
-async function clearExistingData() {
-  console.log('Clearing existing car models...');
-  try {
+    // Clear existing data
     await db.delete(carModels);
-    console.log('Existing data cleared successfully');
+    console.log('Cleared existing data');
+
+    let totalRecords = 0;
+    let batch: any[] = [];
+
+    for (const statement of insertStatements) {
+      const valuesMatch = statement.match(/\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/g);
+      if (!valuesMatch) continue;
+
+      for (const valueStr of valuesMatch) {
+        const values = valueStr
+          .slice(1, -1)
+          .split(',')
+          .map(v => {
+            const trimmed = v.trim();
+            if (trimmed === 'NULL' || trimmed === '') return null;
+            return trimmed.replace(/^'|'$/g, '').replace(/''/g, "'");
+          });
+
+        const record = {
+          make: values[0] || '',
+          model: values[1] || '',
+          platform: values[2] || null,
+          classification: values[3] || null,
+          productionYears: values[4] || null,
+          countryOfOrigin: values[7] || null,
+          unitsProduced: values[11] || null,
+          notes: values[12] || null,
+        };
+
+        batch.push(record);
+
+        if (batch.length >= BATCH_SIZE) {
+          await db.insert(carModels).values(batch);
+          totalRecords += batch.length;
+          console.log(`Imported ${totalRecords} records...`);
+          batch = [];
+        }
+      }
+    }
+
+    // Insert remaining records
+    if (batch.length > 0) {
+      await db.insert(carModels).values(batch);
+      totalRecords += batch.length;
+    }
+
+    console.log(`Import completed! Total records imported: ${totalRecords}`);
+
   } catch (error) {
-    console.error('Error clearing existing data:', error);
-    throw error;
+    console.error('Import failed:', error);
   }
 }
 
-// Run the import process
-clearExistingData()
-  .then(() => importCarModels())
-  .catch(console.error);
+importCarModels().catch(console.error);
