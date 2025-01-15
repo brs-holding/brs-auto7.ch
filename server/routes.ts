@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { carModels } from "@db/schema";
-import { eq, sql } from "drizzle-orm";
+import { carModels, carListings } from "@db/schema";
+import { eq, sql, ilike, and } from "drizzle-orm";
 
 export function registerRoutes(app: Express): Server {
   // Get all unique car makes
@@ -22,6 +22,70 @@ export function registerRoutes(app: Express): Server {
       console.error("Error details:", error instanceof Error ? error.message : error);
       res.status(500).json({ 
         error: "Failed to fetch car makes",
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  });
+
+  // Search car listings
+  app.get("/api/car-listings/search", async (req, res) => {
+    try {
+      const { make, model, minYear, maxYear, minPrice, maxPrice } = req.query;
+      console.log(`Searching car listings with params:`, req.query);
+
+      const query = db
+        .select({
+          id: carListings.id,
+          listingId: carListings.listingId,
+          price: carListings.price,
+          year: carListings.year,
+          mileage: carListings.mileage,
+          fuelType: carListings.fuelType,
+          transmission: carListings.transmission,
+          driveType: carListings.driveType,
+          features: carListings.features,
+          dealershipName: carListings.dealershipName,
+          dealershipAddress: carListings.dealershipAddress,
+          dealershipPhone: carListings.dealershipPhone,
+          make: carModels.make,
+          model: carModels.model,
+        })
+        .from(carListings)
+        .innerJoin(carModels, eq(carListings.carModelId, carModels.id));
+
+      // Apply filters
+      const conditions = [];
+      if (make) {
+        conditions.push(ilike(carModels.make, `%${make}%`));
+      }
+      if (model) {
+        conditions.push(ilike(carModels.model, `%${model}%`));
+      }
+      if (minYear) {
+        conditions.push(sql`${carListings.year} >= ${minYear}`);
+      }
+      if (maxYear) {
+        conditions.push(sql`${carListings.year} <= ${maxYear}`);
+      }
+      if (minPrice) {
+        conditions.push(sql`${carListings.price} >= ${minPrice}`);
+      }
+      if (maxPrice) {
+        conditions.push(sql`${carListings.price} <= ${maxPrice}`);
+      }
+
+      if (conditions.length > 0) {
+        query.where(and(...conditions));
+      }
+
+      const listings = await query;
+      console.log(`Found ${listings.length} matching listings`);
+      res.json(listings);
+    } catch (error) {
+      console.error("Error searching car listings:", error);
+      console.error("Error details:", error instanceof Error ? error.message : error);
+      res.status(500).json({
+        error: "Failed to search car listings",
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }

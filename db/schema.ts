@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, decimal, array } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const carModels = pgTable("car_models", {
@@ -29,7 +29,7 @@ export const carListings = pgTable("car_listings", {
   fuelType: text("fuel_type").notNull(),
   transmission: text("transmission").notNull(),
   driveType: text("drive_type").notNull(),
-  features: array(text("features")),
+  features: text("features").array(),
   dealershipName: text("dealership_name"),
   dealershipAddress: text("dealership_address"),
   dealershipPhone: text("dealership_phone"),
