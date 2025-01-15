@@ -1,43 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
-import { CarCard } from "@/components/CarCard";
+import { Link } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
+import type { CarListing } from "../types/car";
+import { CarCard } from "@/components/CarCard";
 
-interface CarListing {
-  id: number;
-  listingId: string;
-  price: number;
-  year: number;
-  mileage: number;
-  fuelType: string;
-  transmission: string;
-  driveType: string;
-  features: string[] | null;
-  dealershipName: string | null;
-  dealershipAddress: string | null;
-  dealershipPhone: string | null;
-  make: string;
-  model: string;
-}
 
 export function CarSearch() {
   const { t } = useTranslation();
   const [location] = useLocation();
   const searchParams = new URLSearchParams(location.split('?')[1]);
 
-  const [brand, setBrand] = useState(searchParams.get('brand') || "all");
-  const [year, setYear] = useState(searchParams.get('year') || "all");
-  const [priceRange, setPriceRange] = useState(searchParams.get('price') || "all");
+  const [make, setMake] = useState<string>(searchParams.get('make') || "all");
+  const [model, setModel] = useState<string>(searchParams.get('model') || "all");
+  const [year, setYear] = useState<string>(searchParams.get('year') || "all");
+  const [priceRange, setPriceRange] = useState<string>(searchParams.get('price') || "all");
 
   // Fetch car listings with filters
-  const { data: listings, isLoading } = useQuery<CarListing[]>({
-    queryKey: ["/api/cars", brand, year, priceRange],
+  const { data: listings = [], isLoading } = useQuery<CarListing[]>({
+    queryKey: ["/api/cars", make, model, year, priceRange],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (brand !== "all") params.append("make", brand);
+      if (make !== "all") params.append("make", make);
+      if (model !== "all") params.append("model", model);
       if (year !== "all") params.append("year", year);
       if (priceRange !== "all") {
         const [min, max] = priceRange.split('-');
@@ -52,90 +41,74 @@ export function CarSearch() {
     }
   });
 
-  // Get unique brands and years from the listings
-  const brands = Array.from(new Set(listings?.map((listing) => listing.make) || [])).sort();
-  const years = Array.from(
-    new Set(listings?.map((listing) => listing.year.toString()) || [])
-  ).sort((a, b) => parseInt(b) - parseInt(a));
-
-  const priceRanges = [
-    { label: "Bis CHF 50'000", value: "0-50000" },
-    { label: "CHF 50'000 - 100'000", value: "50000-100000" },
-    { label: "CHF 100'000 - 200'000", value: "100000-200000" },
-    { label: "Über CHF 200'000", value: "200000-999999999" },
-  ];
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">
-        {t('search.title')} ({listings?.length || 0})
+      <h1 className="text-2xl font-bold mb-6">
+        {make === "all" ? t('search.title') : make} ({listings.length})
       </h1>
 
-      <div className="grid md:grid-cols-[300px,1fr] gap-8">
-        {/* Filters */}
-        <div className="space-y-6">
-          <div>
-            <Label>{t('search.brand')}</Label>
-            <Select value={brand} onValueChange={setBrand}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('search.brand')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('search.allBrands')}</SelectItem>
-                {brands.map((brand) => (
-                  <SelectItem key={brand} value={brand}>
-                    {brand}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>{t('search.year')}</Label>
-            <Select value={year} onValueChange={setYear}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('search.year')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('search.allYears')}</SelectItem>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>{t('search.priceRange')}</Label>
-            <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('search.priceRange')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('search.allPrices')}</SelectItem>
-                {priceRanges.map((range) => (
-                  <SelectItem key={range.value} value={range.value}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-8">
         {/* Results */}
         <div>
           {isLoading ? (
-            <div className="text-center">{t('search.loading', 'Loading...')}</div>
-          ) : listings?.length === 0 ? (
-            <div className="text-center">{t('search.noResults')}</div>
+            <div className="text-center py-8">{t('search.loading')}</div>
+          ) : listings.length === 0 ? (
+            <div className="text-center py-8">{t('search.noResults')}</div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {listings?.map((listing) => (
-                <CarCard key={listing.id} listing={listing} />
+            <div className="space-y-6">
+              {listings.map((car) => (
+                <div key={car.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-[300px,1fr] gap-6">
+                    {/* Car Image */}
+                    <div className="relative aspect-[4/3] bg-gray-100">
+                      {car.images && car.images[0] && (
+                        <img
+                          src={car.images[0]}
+                          alt={`${car.make} ${car.model}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+
+                    {/* Car Details */}
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h2 className="text-xl font-semibold">
+                            {car.make} {car.model}
+                          </h2>
+                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                            <span>{car.year}</span>
+                            <span>•</span>
+                            <span>{car.mileage.toLocaleString()} km</span>
+                            <span>•</span>
+                            <span>{car.transmission}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold">
+                            CHF {Number(car.price).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <Link href={`/cars/${car.id}`}>
+                          <Button className="w-full">VIEW DETAILS</Button>
+                        </Link>
+                      </div>
+
+                      {car.dealerName && (
+                        <div className="mt-4 pt-4 border-t">
+                          <div className="text-sm text-gray-600">
+                            <div>{car.dealerName}</div>
+                            {car.dealerLocation && <div>{car.dealerLocation}</div>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
