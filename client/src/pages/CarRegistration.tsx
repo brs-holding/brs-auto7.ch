@@ -15,9 +15,9 @@ import { Upload, X } from "lucide-react";
 const carRegistrationSchema = z.object({
   make: z.string().min(1, "Brand is required"),
   model: z.string().min(1, "Model is required"),
-  price: z.string().min(1, "Price is required").transform(Number),
-  year: z.string().min(1, "Year is required").transform(Number),
-  mileage: z.string().min(1, "Mileage is required").transform(Number),
+  price: z.number().min(1, "Price is required"),
+  year: z.number().min(1900, "Year is required"),
+  mileage: z.number().min(0, "Mileage is required"),
   fuelType: z.string().min(1, "Fuel type is required"),
   transmission: z.string().min(1, "Transmission is required"),
   driveType: z.string().min(1, "Drive type is required"),
@@ -43,9 +43,9 @@ export function CarRegistration() {
     defaultValues: {
       make: "",
       model: "",
-      price: "",
-      year: new Date().getFullYear().toString(),
-      mileage: "",
+      price: 0,
+      year: new Date().getFullYear(),
+      mileage: 0,
       fuelType: "",
       transmission: "",
       driveType: "",
@@ -57,19 +57,13 @@ export function CarRegistration() {
 
   const registerCar = useMutation({
     mutationFn: async (data: CarRegistrationForm) => {
-      const formattedData = {
-        ...data,
-        price: parseFloat(data.price.toString()),
-        year: parseInt(data.year.toString()),
-        mileage: parseInt(data.mileage.toString()),
-      };
-
+      console.log('Submitting car data:', data);
       const response = await fetch("/api/cars", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formattedData),
+        body: JSON.stringify(data),
         credentials: "include",
       });
 
@@ -80,12 +74,13 @@ export function CarRegistration() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Success",
         description: "Your car has been registered successfully",
       });
-      navigate("/");
+      // Navigate to the car details page
+      navigate(`/cars/${data.id}`);
     },
     onError: (error: Error) => {
       toast({
@@ -142,6 +137,8 @@ export function CarRegistration() {
       });
       return;
     }
+
+    console.log('Form data before submission:', data);
     registerCar.mutate(data);
   };
 
@@ -195,7 +192,12 @@ export function CarRegistration() {
               <FormItem>
                 <FormLabel>Price (CHF)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="e.g. 25000" {...field} />
+                  <Input 
+                    type="number" 
+                    placeholder="e.g. 25000" 
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -209,7 +211,10 @@ export function CarRegistration() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Year</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(parseInt(value))} 
+                    defaultValue={field.value.toString()}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select year" />
@@ -235,7 +240,12 @@ export function CarRegistration() {
                 <FormItem>
                   <FormLabel>Mileage (km)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g. 50000" {...field} />
+                    <Input 
+                      type="number" 
+                      placeholder="e.g. 50000" 
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
