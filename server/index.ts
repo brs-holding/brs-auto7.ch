@@ -8,10 +8,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Enable CORS for production
+// Enable CORS for development
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   next();
 });
 
@@ -34,11 +38,9 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
@@ -48,7 +50,10 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Test database connection
+    console.log('Initializing database connection...');
+    await db.execute(sql`SELECT 1`);
+    console.log('Database connection established successfully');
+
     console.log('Testing database connection...');
     await db.execute(sql`SELECT 1`);
     console.log('Database connection verified successfully');
@@ -63,14 +68,14 @@ app.use((req, res, next) => {
       res.status(status).json({ message });
     });
 
-    // Serve static files in production
+    // Serve static files in production or set up Vite in development
     if (process.env.NODE_ENV === "production") {
       serveStatic(app);
     } else {
       await setupVite(app, server);
     }
 
-    const PORT = process.env.PORT || 5000;
+    const PORT = parseInt(process.env.PORT || '5000', 10);
     server.listen(PORT, () => {
       log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
     });
