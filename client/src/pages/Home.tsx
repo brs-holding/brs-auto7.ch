@@ -39,10 +39,10 @@ export function Home() {
   );
 
   const priceRanges = [
-    { label: "Hasta RD$ 500,000", value: "0-500000" },
-    { label: "RD$ 500,000 - 1,000,000", value: "500000-1000000" },
-    { label: "RD$ 1,000,000 - 2,000,000", value: "1000000-2000000" },
-    { label: "Más de RD$ 2,000,000", value: "2000000-999999999" },
+    { label: "Bis RD$ 500.000", value: "0-500000" },
+    { label: "RD$ 500.000 - 1.000.000", value: "500000-1000000" },
+    { label: "RD$ 1.000.000 - 2.000.000", value: "1000000-2000000" },
+    { label: "Über RD$ 2.000.000", value: "2000000-999999999" },
   ];
 
   const handleSearch = () => {
@@ -67,14 +67,14 @@ export function Home() {
         <div className="container mx-auto px-4 py-8">
           {/* AutoCarrosRD Direct Banner */}
           <div className="mb-6 flex items-center gap-2">
-            <span className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">NUEVO</span>
-            <span className="font-semibold">AutosRD Direct</span>
+            <span className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">NEU</span>
+            <span className="font-semibold">AutosRD Direkt</span>
           </div>
 
           <h1 className="text-3xl font-bold mb-2">
-            Vende tu carro seguro y rápido a un dealer
+            Verkaufen Sie Ihr Auto sicher und schnell an einen Händler
           </h1>
-          <p className="text-muted-foreground mb-6">100% gratis</p>
+          <p className="text-muted-foreground mb-6">100% kostenlos</p>
 
           {/* Search Box */}
           <Card className="max-w-4xl mx-auto shadow-lg">
@@ -82,10 +82,10 @@ export function Home() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Select value={brand} onValueChange={handleBrandChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Marca" />
+                    <SelectValue placeholder="Marke" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las marcas</SelectItem>
+                    <SelectItem value="all">Alle Marken</SelectItem>
                     {brands.map((brand) => (
                       <SelectItem key={brand} value={brand}>
                         {brand}
@@ -96,10 +96,10 @@ export function Home() {
 
                 <Select value={model} onValueChange={setModel}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Modelo" />
+                    <SelectValue placeholder="Modell" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los modelos</SelectItem>
+                    <SelectItem value="all">Alle Modelle</SelectItem>
                     {models.map((model) => (
                       <SelectItem key={model} value={model}>
                         {model}
@@ -110,10 +110,10 @@ export function Home() {
 
                 <Select value={year} onValueChange={setYear}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Año" />
+                    <SelectValue placeholder="Jahr" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los años</SelectItem>
+                    <SelectItem value="all">Alle Jahre</SelectItem>
                     {years.map((year) => (
                       <SelectItem key={year} value={year}>
                         {year}
@@ -124,10 +124,10 @@ export function Home() {
 
                 <Select value={priceRange} onValueChange={setPriceRange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Precio" />
+                    <SelectValue placeholder="Preis" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los precios</SelectItem>
+                    <SelectItem value="all">Alle Preise</SelectItem>
                     {priceRanges.map((range) => (
                       <SelectItem key={range.value} value={range.value}>
                         {range.label}
@@ -138,7 +138,7 @@ export function Home() {
 
                 <Button onClick={handleSearch} className="w-full" size="lg">
                   <Search className="h-4 w-4 mr-2" />
-                  Buscar
+                  Suchen
                 </Button>
               </div>
             </CardContent>
@@ -149,7 +149,7 @@ export function Home() {
             <Link href="/search?type=car">
               <a className="flex flex-col items-center p-4 hover:bg-muted rounded-lg transition-colors">
                 <Car className="h-8 w-8 mb-2" />
-                <span className="text-sm">Vehículos</span>
+                <span className="text-sm">Autos</span>
               </a>
             </Link>
             <Link href="/search?type=suv">
@@ -161,46 +161,46 @@ export function Home() {
             <Link href="/search?type=truck">
               <a className="flex flex-col items-center p-4 hover:bg-muted rounded-lg transition-colors">
                 <Truck className="h-8 w-8 mb-2" />
-                <span className="text-sm">Camiones</span>
+                <span className="text-sm">Lastwagen</span>
               </a>
             </Link>
             <Link href="/search?type=motorcycle">
               <a className="flex flex-col items-center p-4 hover:bg-muted rounded-lg transition-colors">
                 <Bike className="h-8 w-8 mb-2" />
-                <span className="text-sm">Motocicletas</span>
+                <span className="text-sm">Motorräder</span>
               </a>
             </Link>
             <Link href="/search?type=van">
               <a className="flex flex-col items-center p-4 hover:bg-muted rounded-lg transition-colors">
                 <CaravanIcon className="h-8 w-8 mb-2" />
-                <span className="text-sm">Vans</span>
+                <span className="text-sm">Transporter</span>
               </a>
             </Link>
           </div>
 
           {/* Features Section */}
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">¿Por qué CarrosRD?</h2>
+            <h2 className="text-2xl font-bold mb-6">Warum AutosRD?</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
                   <Search className="h-12 w-12 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">Búsqueda Fácil</h3>
-                  <p>Encuentra el carro perfecto con nuestros filtros avanzados</p>
+                  <h3 className="text-xl font-semibold mb-2">Einfache Suche</h3>
+                  <p>Finden Sie das perfekte Auto mit unseren erweiterten Filtern</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
-                  <img src="/shield-check.svg" alt="Garantía de Calidad" className="h-12 w-12 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">Garantía de Calidad</h3>
-                  <p>Todos los vehículos son verificados por expertos</p>
+                  <img src="/shield-check.svg" alt="Qualitätsgarantie" className="h-12 w-12 mb-4 text-primary" />
+                  <h3 className="text-xl font-semibold mb-2">Qualitätsgarantie</h3>
+                  <p>Alle Fahrzeuge werden von Experten geprüft</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
-                  <img src="/dollar-sign.svg" alt="Financiamiento" className="h-12 w-12 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">Financiamiento</h3>
-                  <p>Opciones flexibles de financiamiento adaptadas a ti</p>
+                  <img src="/dollar-sign.svg" alt="Finanzierung" className="h-12 w-12 mb-4 text-primary" />
+                  <h3 className="text-xl font-semibold mb-2">Finanzierung</h3>
+                  <p>Flexible Finanzierungsoptionen nach Ihren Bedürfnissen</p>
                 </CardContent>
               </Card>
             </div>
@@ -210,7 +210,7 @@ export function Home() {
           <section className="py-16 bg-muted mt-16">
             <div className="container mx-auto">
               <h2 className="text-3xl font-bold text-center mb-8">
-                Calcula Tu Financiamiento
+                Berechnen Sie Ihre Finanzierung
               </h2>
               <FinanceCalculator />
             </div>
