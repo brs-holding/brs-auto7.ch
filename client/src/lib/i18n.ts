@@ -87,13 +87,26 @@ const resources = {
       // Language selector
       "language.de": "Deutsch",
       "language.en": "Englisch",
-      "language.fr": "Französisch", 
+      "language.fr": "Französisch",
       "language.it": "Italienisch",
 
       // Error messages
       "error.notFound": "Seite nicht gefunden",
       "error.serverError": "Serverfehler aufgetreten",
-      "error.tryAgain": "Bitte versuchen Sie es später erneut"
+      "error.tryAgain": "Bitte versuchen Sie es später erneut",
+
+      // Car Details
+      "car.basicData": "Basis Daten",
+      "car.year": "Baujahr",
+      "car.mileage": "Kilometerstand",
+      "car.fuelType": "Kraftstoff",
+      "car.transmission": "Getriebe",
+      "car.colors": "Farben",
+      "car.exteriorColor": "Außenfarbe",
+      "car.interiorColor": "Innenfarbe",
+      "car.description": "Beschreibung",
+      "car.features": "Ausstattung",
+      "car.dealer": "Händler"
     }
   },
   en: {
@@ -185,7 +198,20 @@ const resources = {
       // Error messages
       "error.notFound": "Page not found",
       "error.serverError": "Server error occurred",
-      "error.tryAgain": "Please try again later"
+      "error.tryAgain": "Please try again later",
+
+      // Car Details
+      "car.basicData": "Basic Data",
+      "car.year": "Year",
+      "car.mileage": "Mileage",
+      "car.fuelType": "Fuel Type",
+      "car.transmission": "Transmission",
+      "car.colors": "Colors",
+      "car.exteriorColor": "Exterior Color",
+      "car.interiorColor": "Interior Color",
+      "car.description": "Description",
+      "car.features": "Features",
+      "car.dealer": "Dealer"
     }
   }
 };

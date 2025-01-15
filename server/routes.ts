@@ -21,7 +21,7 @@ export function registerRoutes(app: Express): Server {
       console.error("Error fetching car makes:", error);
       res.status(500).json({ 
         error: "Failed to fetch car makes",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
@@ -78,7 +78,7 @@ export function registerRoutes(app: Express): Server {
       console.error("Error searching car listings:", error);
       res.status(500).json({
         error: "Failed to search car listings",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
@@ -102,7 +102,39 @@ export function registerRoutes(app: Express): Server {
       console.error("Error fetching car models:", error);
       res.status(500).json({ 
         error: "Failed to fetch car models",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  // Get a specific car listing by ID
+  app.get("/api/cars/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`Fetching car details for ID: ${id}`);
+
+      const listing = await db
+        .select()
+        .from(carListings)
+        .where(eq(carListings.id, parseInt(id)))
+        .limit(1);
+
+      if (!listing || listing.length === 0) {
+        console.log(`No car found with ID: ${id}`);
+        res.status(404).json({
+          error: "Car listing not found",
+          details: process.env.NODE_ENV === 'development' ? `No car with ID ${id}` : undefined
+        });
+        return;
+      }
+
+      console.log(`Successfully fetched car details for ID: ${id}`);
+      res.json(listing[0]);
+    } catch (error) {
+      console.error("Error fetching car details:", error);
+      res.status(500).json({
+        error: "Failed to fetch car details",
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
@@ -122,7 +154,7 @@ export function registerRoutes(app: Express): Server {
         status: "error",
         environment: process.env.NODE_ENV,
         database: "disconnected",
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
   });
