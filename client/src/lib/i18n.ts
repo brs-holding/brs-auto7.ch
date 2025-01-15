@@ -10,6 +10,17 @@ const resources = {
       "nav.vehicles": "Fahrzeuge",
       "nav.dealerships": "Autohäuser",
 
+      // Search page
+      "search.title": "Gefundene Fahrzeuge",
+      "search.brand": "Marke",
+      "search.allBrands": "Alle Marken",
+      "search.year": "Jahr",
+      "search.allYears": "Alle Jahre",
+      "search.priceRange": "Preisbereich",
+      "search.allPrices": "Alle Preise",
+      "search.search": "Suchen",
+      "search.noResults": "Keine Fahrzeuge gefunden",
+
       // Dealership Plans
       "plans.title": "Händler-Pakete",
       "plans.subtitle": "Finden Sie das perfekte Paket für Ihr Geschäft",
@@ -76,7 +87,7 @@ const resources = {
       // Language selector
       "language.de": "Deutsch",
       "language.en": "Englisch",
-      "language.fr": "Französisch",
+      "language.fr": "Französisch", 
       "language.it": "Italienisch",
 
       // Error messages
@@ -90,6 +101,17 @@ const resources = {
       // Navigation
       "nav.vehicles": "Vehicles",
       "nav.dealerships": "Dealerships",
+
+      // Search page
+      "search.title": "Found Vehicles",
+      "search.brand": "Brand",
+      "search.allBrands": "All Brands",
+      "search.year": "Year",
+      "search.allYears": "All Years",
+      "search.priceRange": "Price Range",
+      "search.allPrices": "All Prices",
+      "search.search": "Search",
+      "search.noResults": "No vehicles found",
 
       // Dealership Plans
       "plans.title": "Dealership Plans",
