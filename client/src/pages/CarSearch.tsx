@@ -4,8 +4,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { CarListing } from "@db/schema";
 import { useTranslation } from "react-i18next";
+
+interface CarListing {
+  id: number;
+  listingId: string;
+  price: number;
+  year: number;
+  mileage: number;
+  fuelType: string;
+  transmission: string;
+  driveType: string;
+  features: string[] | null;
+  dealershipName: string | null;
+  dealershipAddress: string | null;
+  dealershipPhone: string | null;
+  make: string;
+  model: string;
+}
 
 export function CarSearch() {
   const { t } = useTranslation();
@@ -16,24 +32,27 @@ export function CarSearch() {
   const [year, setYear] = useState(searchParams.get('year') || "all");
   const [priceRange, setPriceRange] = useState(searchParams.get('price') || "all");
 
+  // Fetch car listings with filters
   const { data: listings, isLoading } = useQuery<CarListing[]>({
     queryKey: ["/api/cars", brand, year, priceRange],
-  });
-
-  const filteredListings = listings?.filter((listing) => {
-    const matchesBrand = brand === "all" || listing.make === brand;
-    const matchesYear = year === "all" || listing.year.toString() === year;
-
-    let matchesPrice = true;
-    if (priceRange !== "all") {
-      const [min, max] = priceRange.split('-').map(Number);
-      const price = Number(listing.price);
-      matchesPrice = price >= min && price <= max;
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (brand !== "all") params.append("make", brand);
+      if (year !== "all") params.append("year", year);
+      if (priceRange !== "all") {
+        const [min, max] = priceRange.split('-');
+        params.append("minPrice", min);
+        params.append("maxPrice", max);
+      }
+      const response = await fetch(`/api/cars?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch car listings');
+      }
+      return response.json();
     }
-
-    return matchesBrand && matchesYear && matchesPrice;
   });
 
+  // Get unique brands and years from the listings
   const brands = Array.from(new Set(listings?.map((listing) => listing.make) || [])).sort();
   const years = Array.from(
     new Set(listings?.map((listing) => listing.year.toString()) || [])
@@ -49,7 +68,7 @@ export function CarSearch() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">
-        {t('search.title')} ({filteredListings?.length || 0})
+        {t('search.title')} ({listings?.length || 0})
       </h1>
 
       <div className="grid md:grid-cols-[300px,1fr] gap-8">
@@ -111,11 +130,11 @@ export function CarSearch() {
         <div>
           {isLoading ? (
             <div className="text-center">{t('search.loading', 'Loading...')}</div>
-          ) : filteredListings?.length === 0 ? (
+          ) : listings?.length === 0 ? (
             <div className="text-center">{t('search.noResults')}</div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredListings?.map((listing) => (
+              {listings?.map((listing) => (
                 <CarCard key={listing.id} listing={listing} />
               ))}
             </div>
