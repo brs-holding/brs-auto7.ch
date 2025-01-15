@@ -31,7 +31,7 @@ interface SubscriptionForm {
 const plans: SubscriptionPlan[] = [
   {
     name: "Basis",
-    price: 5000,
+    price: 500,
     features: [
       "Bis zu 10 aktive Anzeigen",
       "Basis-Fotos pro Fahrzeug",
@@ -41,7 +41,7 @@ const plans: SubscriptionPlan[] = [
   },
   {
     name: "Premium",
-    price: 12000,
+    price: 1200,
     features: [
       "Bis zu 30 aktive Anzeigen",
       "Unbegrenzte HD-Fotos",
@@ -53,7 +53,7 @@ const plans: SubscriptionPlan[] = [
   },
   {
     name: "Business",
-    price: 25000,
+    price: 2500,
     features: [
       "Unbegrenzte Anzeigen",
       "HD-Fotos und Videos",
@@ -127,7 +127,7 @@ export function DealershipPlans() {
             <CardHeader>
               <CardTitle className="text-2xl">{plan.name}</CardTitle>
               <p className="text-3xl font-bold">
-                RD$ {plan.price.toLocaleString()}
+                CHF {plan.price.toLocaleString()}
                 <span className="text-sm font-normal text-muted-foreground">
                   /Monat
                 </span>

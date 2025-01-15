@@ -17,10 +17,10 @@ export function FinanceCalculator() {
   const [monthlyPayment, setMonthlyPayment] = useState<number | null>(null);
   const { register, handleSubmit, watch, setValue } = useForm<CalculatorForm>({
     defaultValues: {
-      price: 500000,
-      downPayment: 100000,
+      price: 50000,
+      downPayment: 10000,
       term: 60,
-      interestRate: 12,
+      interestRate: 3.5,
     },
   });
 
@@ -39,12 +39,12 @@ export function FinanceCalculator() {
   return (
     <Card className="max-w-xl mx-auto">
       <CardHeader>
-        <CardTitle>Calculadora de Financiamiento</CardTitle>
+        <CardTitle>Finanzierungsrechner</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(calculatePayment)} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="price">Precio del Vehículo (RD$)</Label>
+            <Label htmlFor="price">Fahrzeugpreis (CHF)</Label>
             <Input
               id="price"
               type="number"
@@ -53,7 +53,7 @@ export function FinanceCalculator() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="downPayment">Inicial (RD$)</Label>
+            <Label htmlFor="downPayment">Anzahlung (CHF)</Label>
             <Input
               id="downPayment"
               type="number"
@@ -62,37 +62,37 @@ export function FinanceCalculator() {
           </div>
 
           <div className="space-y-2">
-            <Label>Plazo (meses): {watch("term")}</Label>
+            <Label>Laufzeit (Monate): {watch("term")}</Label>
             <Slider
               value={[watch("term")]}
               onValueChange={(value) => setValue("term", value[0])}
-              max={72}
+              max={84}
               min={12}
               step={12}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Tasa de Interés (%): {watch("interestRate")}</Label>
+            <Label>Zinssatz (%): {watch("interestRate")}</Label>
             <Slider
               value={[watch("interestRate")]}
               onValueChange={(value) => setValue("interestRate", value[0])}
-              max={20}
-              min={8}
-              step={0.5}
+              max={10}
+              min={1}
+              step={0.1}
             />
           </div>
 
           <Button type="submit" className="w-full">
-            Calcular
+            Berechnen
           </Button>
 
           {monthlyPayment && (
             <div className="mt-4 text-center">
               <p className="text-lg font-semibold">
-                Pago Mensual Estimado:
+                Geschätzte monatliche Rate:
                 <span className="text-primary ml-2">
-                  RD$ {monthlyPayment.toFixed(2)}
+                  CHF {monthlyPayment.toFixed(2)}
                 </span>
               </p>
             </div>

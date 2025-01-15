@@ -12,7 +12,7 @@ export function Navigation() {
         <nav className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/">
-              <a className="text-2xl font-bold text-primary mr-8">AutosRD</a>
+              <a className="text-2xl font-bold text-primary mr-8">Auto7.ch</a>
             </Link>
           </div>
 
