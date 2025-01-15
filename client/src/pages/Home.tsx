@@ -179,41 +179,43 @@ export function Home() {
 
           {/* Features Section */}
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">{t("home.whyAuto7")}</h2>
+            <h2 className="text-2xl font-bold mb-6">{t("features.whyAuto7")}</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
                   <Search className="h-12 w-12 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">{t("home.easySearch")}</h3>
-                  <p>{t("home.easySearchDescription")}</p>
+                  <h3 className="text-xl font-semibold mb-2">{t("features.easySearch")}</h3>
+                  <p>{t("features.easySearchDesc")}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
-                  <img src="/shield-check.svg" alt="Qualitätsgarantie" className="h-12 w-12 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">{t("home.qualityGuarantee")}</h3>
-                  <p>{t("home.qualityGuaranteeDescription")}</p>
+                  <div className="h-12 w-12 mb-4 text-primary flex items-center justify-center">✓</div>
+                  <h3 className="text-xl font-semibold mb-2">{t("features.qualityGuarantee")}</h3>
+                  <p>{t("features.qualityGuaranteeDesc")}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
-                  <img src="/dollar-sign.svg" alt="Finanzierung" className="h-12 w-12 mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">{t("home.financing")}</h3>
-                  <p>{t("home.financingDescription")}</p>
+                  <div className="h-12 w-12 mb-4 text-primary flex items-center justify-center">$</div>
+                  <h3 className="text-xl font-semibold mb-2">{t("features.financing")}</h3>
+                  <p>{t("features.financingDesc")}</p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
           {/* Calculator Section */}
-          <section className="py-16 bg-muted mt-16">
-            <div className="container mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-8">
-                {t("home.calculateFinancing")}
-              </h2>
-              <FinanceCalculator />
-            </div>
-          </section>
+          {FinanceCalculator && (
+            <section className="py-16 bg-muted mt-16">
+              <div className="container mx-auto">
+                <h2 className="text-3xl font-bold text-center mb-8">
+                  {t("features.financing")}
+                </h2>
+                <FinanceCalculator />
+              </div>
+            </section>
+          )}
         </div>
       </section>
     </div>

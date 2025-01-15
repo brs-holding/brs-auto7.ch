@@ -18,7 +18,7 @@ import {
   PhoneIcon,
   MapPinIcon,
 } from "lucide-react";
-import type { CarDetailsType } from "../types/car";
+import type { CarListing } from "../types/car";
 
 interface Params {
   id: string;
@@ -29,7 +29,7 @@ export function CarDetails() {
   const { t } = useTranslation();
   const [activeImage, setActiveImage] = useState(0);
 
-  const { data: car, isLoading } = useQuery<CarDetailsType>({
+  const { data: car, isLoading } = useQuery<CarListing>({
     queryKey: ['/api/cars', params.id],
     queryFn: async () => {
       const response = await fetch(`/api/cars/${params.id}`);
@@ -53,7 +53,7 @@ export function CarDetails() {
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold text-red-600">{t("error.notFound")}</h1>
         <Link href="/search">
-          <Button className="mt-4">{t("search.backToSearch")}</Button>
+          <Button className="mt-4">{t("search.title")}</Button>
         </Link>
       </div>
     );
@@ -99,7 +99,7 @@ export function CarDetails() {
               {car.make} {car.model}
             </h1>
             <p className="text-4xl font-bold text-primary">
-              CHF {car.price.toLocaleString()}
+              CHF {Number(car.price).toLocaleString()}
             </p>
           </div>
         </div>
@@ -199,13 +199,10 @@ export function CarDetails() {
             </Card>
           )}
 
-          {/* Contact Form */}
+          {/* Dealer Info & Contact Form */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">
-              {t("car.contactDealer")}
-            </h2>
             {car.dealerName && (
-              <div className="mb-4 space-y-2">
+              <div className="mb-6 space-y-2">
                 <div className="flex items-center gap-2">
                   <UserIcon className="w-5 h-5 text-gray-500" />
                   <span>{car.dealerName}</span>
@@ -226,19 +223,12 @@ export function CarDetails() {
                 )}
               </div>
             )}
+
             <form className="space-y-4">
-              <div>
-                <Input placeholder={t("contact.name")} />
-              </div>
-              <div>
-                <Input type="email" placeholder={t("contact.email")} />
-              </div>
-              <div>
-                <Input type="tel" placeholder={t("contact.phone")} />
-              </div>
-              <div>
-                <Textarea placeholder={t("contact.message")} rows={4} />
-              </div>
+              <Input placeholder={t("contact.name")} />
+              <Input type="email" placeholder={t("contact.email")} />
+              <Input type="tel" placeholder={t("contact.phone")} />
+              <Textarea placeholder={t("contact.message")} rows={4} />
               <Button className="w-full">{t("contact.send")}</Button>
             </form>
           </Card>

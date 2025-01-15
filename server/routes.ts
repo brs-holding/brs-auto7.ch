@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { carModels, carListings } from "@db/schema";
+import { carListings } from "@db/schema";
 import { eq, sql, ilike, and, desc, or } from "drizzle-orm";
 
 export function registerRoutes(app: Express): Server {
@@ -53,8 +53,8 @@ export function registerRoutes(app: Express): Server {
   // Get all car listings with optional search filters
   app.get("/api/cars", async (req, res) => {
     try {
-      const { make, model, minYear, maxYear, minPrice, maxPrice } = req.query;
-      console.log('Search parameters:', { make, model, minYear, maxYear, minPrice, maxPrice });
+      const { make, model, minYear, maxYear, minPrice, maxPrice, type } = req.query;
+      console.log('Search parameters:', { make, model, minYear, maxYear, minPrice, maxPrice, type });
 
       const conditions = [];
 
@@ -63,8 +63,8 @@ export function registerRoutes(app: Express): Server {
         conditions.push(eq(carListings.make, make as string));
       }
 
-      // Add model filter if both make and model are specified
-      if (model && model !== 'all' && make && make !== 'all') {
+      // Add model filter if specified
+      if (model && model !== 'all') {
         conditions.push(eq(carListings.model, model as string));
       }
 
@@ -82,6 +82,11 @@ export function registerRoutes(app: Express): Server {
       }
       if (maxPrice) {
         conditions.push(sql`${carListings.price} <= ${parseFloat(maxPrice as string)}`);
+      }
+
+      // Add vehicle type filter if specified
+      if (type) {
+        conditions.push(eq(carListings.category, type as string));
       }
 
       console.log('Executing search query...');
@@ -122,8 +127,7 @@ export function registerRoutes(app: Express): Server {
       if (!listing || listing.length === 0) {
         console.log(`No car found with ID: ${id}`);
         res.status(404).json({
-          error: "Car listing not found",
-          details: process.env.NODE_ENV === 'development' ? `No car with ID ${id}` : undefined
+          error: "Car listing not found"
         });
         return;
       }
@@ -143,17 +147,11 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/health", async (_req, res) => {
     try {
       await db.execute(sql`SELECT 1`);
-      res.json({ 
-        status: "ok", 
-        environment: process.env.NODE_ENV,
-        database: "connected"
-      });
+      res.json({ status: "ok" });
     } catch (error) {
       console.error("Health check failed:", error);
       res.status(503).json({ 
         status: "error",
-        environment: process.env.NODE_ENV,
-        database: "disconnected",
         details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }

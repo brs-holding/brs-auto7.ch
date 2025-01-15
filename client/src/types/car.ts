@@ -1,27 +1,6 @@
 import { z } from 'zod';
 
-export interface CarDetailsType {
-  id: number;
-  make: string;
-  model: string;
-  price: number;
-  year: number;
-  mileage: number;
-  fuelType: string;
-  transmission: string;
-  driveType?: string;
-  color?: string;
-  interiorColor?: string;
-  description?: string;
-  features?: string[];
-  images?: string[];
-  dealerName?: string;
-  dealerLocation?: string;
-  dealerPhone?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
+// Base car types
 export const carSchema = z.object({
   id: z.number(),
   make: z.string(),
@@ -32,6 +11,7 @@ export const carSchema = z.object({
   fuelType: z.string(),
   transmission: z.string(),
   driveType: z.string().optional(),
+  category: z.string().optional(),
   color: z.string().optional(),
   interiorColor: z.string().optional(),
   description: z.string().optional(),
@@ -45,3 +25,4 @@ export const carSchema = z.object({
 });
 
 export type CarType = z.infer<typeof carSchema>;
+export type CarListing = z.infer<typeof carSchema>;

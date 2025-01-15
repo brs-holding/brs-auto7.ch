@@ -20,6 +20,7 @@ export const carListings = pgTable("car_listings", {
   fuelType: text("fuel_type").notNull(),
   transmission: text("transmission").notNull(),
   driveType: text("drive_type"),
+  category: text("category"),
   color: text("color"),
   interiorColor: text("interior_color"),
   description: text("description"),
