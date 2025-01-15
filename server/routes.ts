@@ -1,10 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { carListings } from "@db/schema";
-import { eq, sql, ilike, and, desc, or } from "drizzle-orm";
+import { carListings, favorites } from "@db/schema";
+import { eq, sql, and, desc } from "drizzle-orm";
+import { setupAuth, isAuthenticated } from "./auth";
 
 export function registerRoutes(app: Express): Server {
+  // Set up authentication
+  setupAuth(app);
+
   // Get all unique car makes
   app.get("/api/car-makes", async (_req, res) => {
     try {
@@ -131,17 +135,67 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Health check endpoint
-  app.get("/api/health", async (_req, res) => {
+  // Add favorites routes
+  app.post("/api/favorites/:carId", isAuthenticated, async (req, res) => {
     try {
-      await db.execute(sql`SELECT 1`);
-      res.json({ status: "ok" });
+      const carId = parseInt(req.params.carId);
+      const userId = (req.user as any).id;
+
+      const [favorite] = await db
+        .insert(favorites)
+        .values({
+          userId,
+          carListingId: carId
+        })
+        .returning();
+
+      res.json(favorite);
     } catch (error) {
-      console.error("Health check failed:", error);
-      res.status(503).json({ 
-        status: "error",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-      });
+      console.error("Error adding favorite:", error);
+      res.status(500).json({ error: "Failed to add favorite" });
+    }
+  });
+
+  app.delete("/api/favorites/:carId", isAuthenticated, async (req, res) => {
+    try {
+      const carId = parseInt(req.params.carId);
+      const userId = (req.user as any).id;
+
+      await db
+        .delete(favorites)
+        .where(
+          and(
+            eq(favorites.userId, userId),
+            eq(favorites.carListingId, carId)
+          )
+        );
+
+      res.json({ message: "Favorite removed" });
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      res.status(500).json({ error: "Failed to remove favorite" });
+    }
+  });
+
+  app.get("/api/favorites", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const userFavorites = await db
+        .select({
+          favorite: favorites,
+          car: carListings
+        })
+        .from(favorites)
+        .innerJoin(carListings, eq(favorites.carListingId, carListings.id))
+        .where(eq(favorites.userId, userId));
+
+      res.json(userFavorites.map(f => ({
+        ...f.car,
+        favoriteId: f.favorite.id
+      })));
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ error: "Failed to fetch favorites" });
     }
   });
 
