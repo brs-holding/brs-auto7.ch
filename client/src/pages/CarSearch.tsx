@@ -1,14 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import type { CarListing } from "../types/car";
-import { CarCard } from "@/components/CarCard";
-
 
 export function CarSearch() {
   const { t } = useTranslation();
@@ -19,6 +16,32 @@ export function CarSearch() {
   const [model, setModel] = useState<string>(searchParams.get('model') || "all");
   const [year, setYear] = useState<string>(searchParams.get('year') || "all");
   const [priceRange, setPriceRange] = useState<string>(searchParams.get('price') || "all");
+
+  // Fetch available car makes
+  const { data: makes = [] } = useQuery<string[]>({
+    queryKey: ["/api/car-makes"],
+    queryFn: async () => {
+      const response = await fetch("/api/car-makes");
+      if (!response.ok) {
+        throw new Error('Failed to fetch car makes');
+      }
+      return response.json();
+    }
+  });
+
+  // Fetch models for selected make
+  const { data: models = [] } = useQuery<string[]>({
+    queryKey: ["/api/car-models", make],
+    queryFn: async () => {
+      if (make === "all") return [];
+      const response = await fetch(`/api/car-models/${make}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch car models');
+      }
+      return response.json();
+    },
+    enabled: make !== "all"
+  });
 
   // Fetch car listings with filters
   const { data: listings = [], isLoading } = useQuery<CarListing[]>({
@@ -41,17 +64,62 @@ export function CarSearch() {
     }
   });
 
+  const handleMakeChange = (value: string) => {
+    setMake(value);
+    setModel("all"); // Reset model when make changes
+
+    // Update URL
+    const params = new URLSearchParams(location.split('?')[1]);
+    if (value !== "all") {
+      params.set("make", value);
+    } else {
+      params.delete("make");
+    }
+    params.delete("model"); // Remove model param when make changes
+    window.history.pushState({}, '', `${location.split('?')[0]}?${params.toString()}`);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">
-        {make === "all" ? t('search.title') : make} ({listings.length})
+        {make === "all" ? t('search.title') : `${make} ${t('search.title')}`} ({listings.length})
       </h1>
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {/* Make filter */}
+        <Select value={make} onValueChange={handleMakeChange}>
+          <SelectTrigger>
+            <SelectValue placeholder={t('search.brand')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('search.allBrands')}</SelectItem>
+            {makes.map((brand) => (
+              <SelectItem key={brand} value={brand}>
+                {brand}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Model filter */}
+        <Select value={model} onValueChange={setModel}>
+          <SelectTrigger>
+            <SelectValue placeholder={t('search.model')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('search.allModels')}</SelectItem>
+            {models.map((modelName) => (
+              <SelectItem key={modelName} value={modelName}>
+                {modelName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {/* Results */}
-        <div>
+        <div className="md:col-span-4">
           {isLoading ? (
-            <div className="text-center py-8">{t('search.loading')}</div>
+            <div className="text-center py-8">Loading...</div>
           ) : listings.length === 0 ? (
             <div className="text-center py-8">{t('search.noResults')}</div>
           ) : (
