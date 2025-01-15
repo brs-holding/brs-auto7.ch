@@ -30,6 +30,60 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Register a new car
+  app.post("/api/cars", isAuthenticated, async (req, res) => {
+    try {
+      const {
+        make,
+        model,
+        price,
+        year,
+        mileage,
+        fuelType,
+        transmission,
+        driveType,
+        color,
+        description,
+        images
+      } = req.body;
+
+      // Validate required fields
+      if (!make || !model || !price || !year || !mileage) {
+        return res.status(400).json({
+          error: "Missing required fields"
+        });
+      }
+
+      const [newListing] = await db
+        .insert(carListings)
+        .values({
+          userId: (req.user as any).id,
+          make,
+          model,
+          price: parseFloat(price),
+          year: parseInt(year),
+          mileage: parseInt(mileage),
+          fuelType,
+          transmission,
+          driveType,
+          color,
+          description,
+          images: images || [],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      console.log(`Created new car listing: ${newListing.id}`);
+      res.status(201).json(newListing);
+    } catch (error) {
+      console.error("Error creating car listing:", error);
+      res.status(500).json({
+        error: "Failed to create car listing"
+      });
+    }
+  });
+
   // Get models for a specific make
   app.get("/api/car-models/:make", async (req, res) => {
     try {
@@ -91,7 +145,6 @@ export function registerRoutes(app: Express): Server {
         : db.select().from(carListings);
 
       const listings = await query.orderBy(desc(carListings.createdAt));
-
       console.log(`Found ${listings.length} matching listings`);
       res.json(listings);
     } catch (error) {
