@@ -39,10 +39,10 @@ export function Home() {
   );
 
   const priceRanges = [
-    { label: "Bis RD$ 500.000", value: "0-500000" },
-    { label: "RD$ 500.000 - 1.000.000", value: "500000-1000000" },
-    { label: "RD$ 1.000.000 - 2.000.000", value: "1000000-2000000" },
-    { label: "Über RD$ 2.000.000", value: "2000000-999999999" },
+    { label: "Bis CHF 50.000", value: "0-50000" },
+    { label: "CHF 50.000 - 100.000", value: "50000-100000" },
+    { label: "CHF 100.000 - 200.000", value: "100000-200000" },
+    { label: "Über CHF 200.000", value: "200000-999999999" },
   ];
 
   const handleSearch = () => {
