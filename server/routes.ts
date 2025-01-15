@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { carListings, favorites } from "@db/schema";
+import { carListings, favorites, type InsertCarListing } from "@db/schema";
 import { eq, sql, and, desc } from "drizzle-orm";
 import { setupAuth, isAuthenticated } from "./auth";
 
@@ -46,7 +46,7 @@ export function registerRoutes(app: Express): Server {
         driveType,
         color,
         description,
-        images
+        images = []
       } = req.body;
 
       // Validate required fields
@@ -57,29 +57,35 @@ export function registerRoutes(app: Express): Server {
         });
       }
 
-      console.log('Creating new car listing with user ID:', (req.user as any).id);
+      const userId = (req.user as any).id;
+      console.log('Creating new car listing with user ID:', userId);
+
+      // Prepare the car listing data with proper types
+      const carData: InsertCarListing = {
+        userId,
+        make,
+        model,
+        price: typeof price === 'string' ? parseFloat(price) : price,
+        year: typeof year === 'string' ? parseInt(year) : year,
+        mileage: typeof mileage === 'string' ? parseInt(mileage) : mileage,
+        fuelType,
+        transmission,
+        driveType,
+        color,
+        description,
+        images,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      console.log('Formatted car data:', carData);
 
       const [newListing] = await db
         .insert(carListings)
-        .values({
-          userId: (req.user as any).id,
-          make,
-          model,
-          price: parseFloat(price),
-          year: parseInt(year),
-          mileage: parseInt(mileage),
-          fuelType,
-          transmission,
-          driveType,
-          color,
-          description,
-          images: images || [],
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
+        .values(carData)
         .returning();
 
-      console.log(`Created new car listing: ${newListing.id}`);
+      console.log('Successfully created car listing:', newListing);
       res.status(201).json(newListing);
     } catch (error) {
       console.error("Error creating car listing:", error);
