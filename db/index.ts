@@ -12,14 +12,23 @@ let db: ReturnType<typeof drizzle>;
 
 try {
   console.log('Initializing database connection...');
+  // For production, we want to use the direct connection without WebSocket
+  const connectionConfig = process.env.NODE_ENV === 'production' 
+    ? { connection: process.env.DATABASE_URL }
+    : { connection: process.env.DATABASE_URL, ws };
+
   db = drizzle({
-    connection: process.env.DATABASE_URL,
+    ...connectionConfig,
     schema,
-    ws: process.env.NODE_ENV === 'production' ? undefined : ws,
   });
   console.log('Database connection established successfully');
 } catch (error) {
   console.error('Failed to initialize database connection:', error);
+  console.error('Connection details:', {
+    nodeEnv: process.env.NODE_ENV,
+    hasDbUrl: !!process.env.DATABASE_URL,
+    error: error instanceof Error ? error.message : String(error)
+  });
   throw error;
 }
 
