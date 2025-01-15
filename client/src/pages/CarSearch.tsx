@@ -28,16 +28,45 @@ export function CarSearch() {
   const [location] = useLocation();
   const searchParams = new URLSearchParams(location.split('?')[1]);
 
-  const [brand, setBrand] = useState(searchParams.get('brand') || "all");
+  // Initialize state with URL parameters
+  const [make, setMake] = useState(searchParams.get('make') || "all");
+  const [model, setModel] = useState(searchParams.get('model') || "all");
   const [year, setYear] = useState(searchParams.get('year') || "all");
-  const [priceRange, setPriceRange] = useState(searchParams.get('price') || "all");
+  const [priceRange, setPriceRange] = useState(
+    searchParams.get('minPrice') && searchParams.get('maxPrice') 
+      ? `${searchParams.get('minPrice')}-${searchParams.get('maxPrice')}`
+      : "all"
+  );
+
+  // Fetch car makes
+  const { data: makes = [] } = useQuery({
+    queryKey: ["/api/car-makes"],
+    queryFn: async () => {
+      const response = await fetch("/api/car-makes");
+      if (!response.ok) throw new Error("Failed to fetch car makes");
+      return response.json();
+    },
+  });
+
+  // Fetch models for selected make
+  const { data: models = [] } = useQuery({
+    queryKey: ["/api/car-models", make],
+    queryFn: async () => {
+      if (make === "all") return [];
+      const response = await fetch(`/api/car-models/${make}`);
+      if (!response.ok) throw new Error("Failed to fetch car models");
+      return response.json();
+    },
+    enabled: make !== "all",
+  });
 
   // Fetch car listings with filters
-  const { data: listings, isLoading } = useQuery<CarListing[]>({
-    queryKey: ["/api/cars", brand, year, priceRange],
+  const { data: listings = [], isLoading } = useQuery<CarListing[]>({
+    queryKey: ["/api/cars", make, model, year, priceRange],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (brand !== "all") params.append("make", brand);
+      if (make !== "all") params.append("make", make);
+      if (model !== "all") params.append("model", model);
       if (year !== "all") params.append("year", year);
       if (priceRange !== "all") {
         const [min, max] = priceRange.split('-');
@@ -52,18 +81,31 @@ export function CarSearch() {
     }
   });
 
-  // Get unique brands and years from the listings
-  const brands = Array.from(new Set(listings?.map((listing) => listing.make) || [])).sort();
   const years = Array.from(
-    new Set(listings?.map((listing) => listing.year.toString()) || [])
-  ).sort((a, b) => parseInt(b) - parseInt(a));
+    { length: 2025 - 1990 + 1 },
+    (_, i) => (2025 - i).toString()
+  );
 
   const priceRanges = [
-    { label: "Bis CHF 50'000", value: "0-50000" },
-    { label: "CHF 50'000 - 100'000", value: "50000-100000" },
-    { label: "CHF 100'000 - 200'000", value: "100000-200000" },
-    { label: "Über CHF 200'000", value: "200000-999999999" },
+    { label: t("home.price.under50k"), value: "0-50000" },
+    { label: t("home.price.50kTo100k"), value: "50000-100000" },
+    { label: t("home.price.100kTo200k"), value: "100000-200000" },
+    { label: t("home.price.over200k"), value: "200000-999999999" },
   ];
+
+  // Update URL when filters change
+  const updateUrl = (newMake?: string, newModel?: string, newYear?: string, newPriceRange?: string) => {
+    const params = new URLSearchParams();
+    if ((newMake || make) !== "all") params.append("make", newMake || make);
+    if ((newModel || model) !== "all") params.append("model", newModel || model);
+    if ((newYear || year) !== "all") params.append("year", newYear || year);
+    if ((newPriceRange || priceRange) !== "all") {
+      const [min, max] = (newPriceRange || priceRange).split('-');
+      params.append("minPrice", min);
+      params.append("maxPrice", max);
+    }
+    window.history.replaceState(null, '', `/search?${params.toString()}`);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -76,13 +118,20 @@ export function CarSearch() {
         <div className="space-y-6">
           <div>
             <Label>{t('search.brand')}</Label>
-            <Select value={brand} onValueChange={setBrand}>
+            <Select 
+              value={make} 
+              onValueChange={(value) => {
+                setMake(value);
+                setModel("all"); // Reset model when make changes
+                updateUrl(value, "all");
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder={t('search.brand')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('search.allBrands')}</SelectItem>
-                {brands.map((brand) => (
+                {makes.map((brand) => (
                   <SelectItem key={brand} value={brand}>
                     {brand}
                   </SelectItem>
@@ -92,8 +141,37 @@ export function CarSearch() {
           </div>
 
           <div>
+            <Label>{t('search.model')}</Label>
+            <Select 
+              value={model} 
+              onValueChange={(value) => {
+                setModel(value);
+                updateUrl(undefined, value);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('search.model')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('search.allModels')}</SelectItem>
+                {models.map((model) => (
+                  <SelectItem key={model} value={model}>
+                    {model}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label>{t('search.year')}</Label>
-            <Select value={year} onValueChange={setYear}>
+            <Select 
+              value={year} 
+              onValueChange={(value) => {
+                setYear(value);
+                updateUrl(undefined, undefined, value);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder={t('search.year')} />
               </SelectTrigger>
@@ -110,7 +188,13 @@ export function CarSearch() {
 
           <div>
             <Label>{t('search.priceRange')}</Label>
-            <Select value={priceRange} onValueChange={setPriceRange}>
+            <Select 
+              value={priceRange} 
+              onValueChange={(value) => {
+                setPriceRange(value);
+                updateUrl(undefined, undefined, undefined, value);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder={t('search.priceRange')} />
               </SelectTrigger>
