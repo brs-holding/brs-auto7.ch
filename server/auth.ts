@@ -123,6 +123,7 @@ export async function setupAuth(app: Express) {
       // Log the user in
       req.login(newUser, (err) => {
         if (err) {
+          console.error("Login error after registration:", err);
           return res.status(500).json({ error: "Error logging in after registration" });
         }
         return res.json({
@@ -143,6 +144,7 @@ export async function setupAuth(app: Express) {
   app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err: any, user: Express.User | false, info: any) => {
       if (err) {
+        console.error("Login error:", err);
         return next(err);
       }
       if (!user) {
@@ -150,6 +152,7 @@ export async function setupAuth(app: Express) {
       }
       req.login(user, (err) => {
         if (err) {
+          console.error("Login session error:", err);
           return next(err);
         }
         return res.json({
