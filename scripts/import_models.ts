@@ -1,21 +1,25 @@
+
 import { db } from "@db";
 import { carModels } from "@db/schema";
 import fs from "fs";
 
-const BATCH_SIZE = 10; // Very small batch size to prevent timeouts
+const BATCH_SIZE = 50; // Increased batch size for better performance
 const MAX_RETRIES = 3;
 
 async function importCarModels() {
   console.log('Starting import process...');
-  const sqlFile = fs.readFileSync('attached_assets/Car-Models-List-by-Teoalida-Worldwide-version (1).sql', 'utf-8');
+  try {
+    const sqlFile = fs.readFileSync('attached_assets/Car-Models-List-by-Teoalida-Worldwide-version (1).sql', 'utf-8');
+    console.log('SQL file loaded successfully');
 
-  // Skip SQL header comments and table creation
+  // Find the INSERT statements
   const insertStart = sqlFile.indexOf('INSERT INTO');
   if (insertStart === -1) {
     throw new Error('No INSERT statements found in SQL file');
   }
 
   const insertContent = sqlFile.slice(insertStart);
+  // Match values between parentheses
   const valuesRegex = /\(((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*)\)/g;
   const matches = Array.from(insertContent.matchAll(valuesRegex));
 
@@ -33,10 +37,11 @@ async function importCarModels() {
       .map(v => v.trim())
       .map(v => {
         if (v === 'NULL' || v === '') return null;
+        // Remove quotes and handle escaped quotes
         return v.replace(/^'|'$/g, '').replace(/''/g, "'");
       });
 
-    // Skip if no make or model
+    // Skip header or empty rows
     if (!values[0] || values[0] === 'Make') continue;
 
     try {
@@ -68,7 +73,7 @@ async function importCarModels() {
           } catch (error) {
             retryCount++;
             if (retryCount >= MAX_RETRIES) {
-              console.error(`Failed to import batch after ${MAX_RETRIES} retries. Starting with ${batch[0].make} ${batch[0].model}:`, error);
+              console.error(`Failed to import batch after ${MAX_RETRIES} retries:`, error);
               errors += batch.length;
               break;
             }
@@ -79,7 +84,7 @@ async function importCarModels() {
         batch = [];
       }
     } catch (error) {
-      console.error(`Error processing record ${values[0]} ${values[1]}:`, error);
+      console.error(`Error processing record:`, error);
       errors++;
     }
   }
