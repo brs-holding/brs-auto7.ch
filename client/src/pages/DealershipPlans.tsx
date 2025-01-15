@@ -30,39 +30,39 @@ interface SubscriptionForm {
 
 const plans: SubscriptionPlan[] = [
   {
-    name: "Básico",
+    name: "Basis",
     price: 5000,
     features: [
-      "Hasta 10 listados activos",
-      "Fotos básicas por vehículo",
-      "Soporte por correo electrónico",
-      "Listados por 30 días",
+      "Bis zu 10 aktive Anzeigen",
+      "Basis-Fotos pro Fahrzeug",
+      "E-Mail-Support",
+      "30 Tage Anzeigenlaufzeit",
     ],
   },
   {
     name: "Premium",
     price: 12000,
     features: [
-      "Hasta 30 listados activos",
-      "Fotos HD ilimitadas",
-      "Soporte prioritario",
-      "Listados destacados",
-      "Estadísticas de visualización",
-      "Herramientas de marketing",
+      "Bis zu 30 aktive Anzeigen",
+      "Unbegrenzte HD-Fotos",
+      "Prioritäts-Support",
+      "Hervorgehobene Anzeigen",
+      "Zugriffsstatistiken",
+      "Marketing-Tools",
     ],
   },
   {
-    name: "Empresarial",
+    name: "Business",
     price: 25000,
     features: [
-      "Listados ilimitados",
-      "Fotos y videos HD",
-      "Soporte 24/7",
-      "Listados destacados premium",
-      "Análisis avanzado de mercado",
-      "API de integración",
-      "Página de concesionario personalizada",
-      "Herramientas CRM incluidas",
+      "Unbegrenzte Anzeigen",
+      "HD-Fotos und Videos",
+      "24/7 Support",
+      "Premium hervorgehobene Anzeigen",
+      "Erweiterte Marktanalyse",
+      "API-Integration",
+      "Individuelle Händlerseite",
+      "CRM-Tools inklusive",
     ],
   },
 ];
@@ -84,16 +84,16 @@ export function DealershipPlans() {
     },
     onSuccess: () => {
       toast({
-        title: "¡Suscripción exitosa!",
-        description: "Nos pondremos en contacto contigo pronto.",
+        title: "Anmeldung erfolgreich!",
+        description: "Wir werden uns in Kürze mit Ihnen in Verbindung setzen.",
       });
       reset();
       setSelectedPlan(null);
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "No se pudo procesar la suscripción. Intenta nuevamente.",
+        title: "Fehler",
+        description: "Die Anmeldung konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.",
         variant: "destructive",
       });
     },
@@ -110,9 +110,9 @@ export function DealershipPlans() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Planes para Concesionarios</h1>
+        <h1 className="text-4xl font-bold mb-4">Händler-Pakete</h1>
         <p className="text-xl text-muted-foreground">
-          Encuentra el plan perfecto para hacer crecer tu negocio
+          Finden Sie das perfekte Paket für Ihr Geschäft
         </p>
       </div>
 
@@ -121,7 +121,7 @@ export function DealershipPlans() {
           <Card key={plan.name} className="relative overflow-hidden">
             {plan.name === "Premium" && (
               <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-1 rounded-bl-lg text-sm">
-                Más Popular
+                Beliebteste Wahl
               </div>
             )}
             <CardHeader>
@@ -129,7 +129,7 @@ export function DealershipPlans() {
               <p className="text-3xl font-bold">
                 RD$ {plan.price.toLocaleString()}
                 <span className="text-sm font-normal text-muted-foreground">
-                  /mes
+                  /Monat
                 </span>
               </p>
             </CardHeader>
@@ -150,28 +150,28 @@ export function DealershipPlans() {
                     variant={plan.name === "Premium" ? "default" : "outline"}
                     onClick={() => setSelectedPlan(plan)}
                   >
-                    Seleccionar Plan
+                    Paket wählen
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Suscribirse al Plan {plan.name}</DialogTitle>
+                    <DialogTitle>Anmeldung für {plan.name}-Paket</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
-                      <Label htmlFor="name">Nombre del Concesionario</Label>
+                      <Label htmlFor="name">Name des Autohauses</Label>
                       <Input
                         id="name"
                         {...register("name", { required: true })}
                       />
                       {errors.name && (
                         <span className="text-sm text-destructive">
-                          Este campo es requerido
+                          Dieses Feld ist erforderlich
                         </span>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="email">Correo Electrónico</Label>
+                      <Label htmlFor="email">E-Mail</Label>
                       <Input
                         id="email"
                         type="email"
@@ -179,38 +179,38 @@ export function DealershipPlans() {
                       />
                       {errors.email && (
                         <span className="text-sm text-destructive">
-                          Este campo es requerido
+                          Dieses Feld ist erforderlich
                         </span>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="phone">Teléfono</Label>
+                      <Label htmlFor="phone">Telefon</Label>
                       <Input
                         id="phone"
                         {...register("phone", { required: true })}
                       />
                       {errors.phone && (
                         <span className="text-sm text-destructive">
-                          Este campo es requerido
+                          Dieses Feld ist erforderlich
                         </span>
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="address">Dirección</Label>
+                      <Label htmlFor="address">Adresse</Label>
                       <Input
                         id="address"
                         {...register("address", { required: true })}
                       />
                       {errors.address && (
                         <span className="text-sm text-destructive">
-                          Este campo es requerido
+                          Dieses Feld ist erforderlich
                         </span>
                       )}
                     </div>
                     <Button type="submit" className="w-full">
                       {subscription.isPending
-                        ? "Procesando..."
-                        : "Confirmar Suscripción"}
+                        ? "Wird verarbeitet..."
+                        : "Anmeldung bestätigen"}
                     </Button>
                   </form>
                 </DialogContent>
