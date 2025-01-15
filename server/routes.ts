@@ -32,11 +32,6 @@ export function registerRoutes(app: Express): Server {
       const { make, model, minYear, maxYear, minPrice, maxPrice } = req.query;
       console.log('Search parameters:', { make, model, minYear, maxYear, minPrice, maxPrice });
 
-      let query = db
-        .select()
-        .from(carListings)
-        .orderBy(desc(carListings.createdAt));
-
       const conditions = [];
 
       // Add make filter if specified
@@ -65,13 +60,18 @@ export function registerRoutes(app: Express): Server {
         conditions.push(sql`${carListings.price} <= ${parseFloat(maxPrice as string)}`);
       }
 
-      // Apply all conditions if any exist
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
-      }
-
       console.log('Executing search query...');
-      const listings = await query;
+      const listings = conditions.length > 0 
+        ? await db
+            .select()
+            .from(carListings)
+            .where(and(...conditions))
+            .orderBy(desc(carListings.createdAt))
+        : await db
+            .select()
+            .from(carListings)
+            .orderBy(desc(carListings.createdAt));
+
       console.log(`Found ${listings.length} matching listings`);
       res.json(listings);
     } catch (error) {
