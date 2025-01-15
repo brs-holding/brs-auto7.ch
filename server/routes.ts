@@ -26,6 +26,30 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get models for a specific make
+  app.get("/api/car-models/:make", async (req, res) => {
+    try {
+      const { make } = req.params;
+      console.log(`Fetching models for make: ${make}`);
+
+      const models = await db
+        .select({ model: carListings.model })
+        .from(carListings)
+        .where(eq(carListings.make, make))
+        .groupBy(carListings.model)
+        .orderBy(carListings.model);
+
+      console.log(`Successfully fetched ${models.length} models for ${make}`);
+      res.json(models.map(m => m.model));
+    } catch (error) {
+      console.error("Error fetching car models:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch car models",
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
   // Get all car listings with optional search filters
   app.get("/api/cars", async (req, res) => {
     try {
@@ -83,30 +107,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get models for a specific make
-  app.get("/api/car-models/:make", async (req, res) => {
-    try {
-      const { make } = req.params;
-      console.log(`Fetching models for make: ${make}`);
-
-      const models = await db
-        .select({ model: carListings.model })
-        .from(carListings)
-        .where(eq(carListings.make, make))
-        .groupBy(carListings.model)
-        .orderBy(carListings.model);
-
-      console.log(`Successfully fetched ${models.length} models for ${make}`);
-      res.json(models.map(m => m.model));
-    } catch (error) {
-      console.error("Error fetching car models:", error);
-      res.status(500).json({ 
-        error: "Failed to fetch car models",
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-      });
-    }
-  });
-
   // Get a specific car listing by ID
   app.get("/api/cars/:id", async (req, res) => {
     try {
@@ -139,7 +139,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Health check endpoint with database check
+  // Health check endpoint
   app.get("/api/health", async (_req, res) => {
     try {
       await db.execute(sql`SELECT 1`);
