@@ -65,10 +65,10 @@ export function Home() {
       {/* Search Section */}
       <section className="bg-background border-b">
         <div className="container mx-auto px-4 py-8">
-          {/* AutoCarrosRD Direct Banner */}
+          {/* Auto7.ch Direct Banner */}
           <div className="mb-6 flex items-center gap-2">
             <span className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">NEU</span>
-            <span className="font-semibold">AutosRD Direkt</span>
+            <span className="font-semibold">Auto7.ch Direkt</span>
           </div>
 
           <h1 className="text-3xl font-bold mb-2">
@@ -180,7 +180,7 @@ export function Home() {
 
           {/* Features Section */}
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">Warum AutosRD?</h2>
+            <h2 className="text-2xl font-bold mb-6">Warum Auto7.ch?</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <Card>
                 <CardContent className="p-6 flex flex-col items-center text-center">
