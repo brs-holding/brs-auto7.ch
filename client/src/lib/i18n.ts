@@ -51,7 +51,7 @@ const resources = {
 
       // Vehicle categories
       "category.cars": "Autos",
-      "category.suv": "SUV",
+      "category.suv": "SUVs",
       "category.trucks": "Lastwagen",
       "category.motorcycles": "Motorräder",
       "category.vans": "Transporter",
@@ -68,16 +68,21 @@ const resources = {
       // Footer
       "footer.about": "Ihr vertrauenswürdiger Marktplatz für den Kauf und Verkauf von Fahrzeugen in der Schweiz.",
       "footer.links": "Links",
-      "footer.searchCars": "Autos Suchen",
+      "footer.searchCars": "Autos suchen",
       "footer.contact": "Kontakt",
       "footer.followUs": "Folgen Sie uns",
       "footer.rights": "Alle Rechte vorbehalten.",
 
       // Language selector
       "language.de": "Deutsch",
-      "language.en": "English",
-      "language.fr": "Français",
-      "language.it": "Italiano"
+      "language.en": "Englisch",
+      "language.fr": "Französisch",
+      "language.it": "Italienisch",
+
+      // Error messages
+      "error.notFound": "Seite nicht gefunden",
+      "error.serverError": "Serverfehler aufgetreten",
+      "error.tryAgain": "Bitte versuchen Sie es später erneut"
     }
   },
   en: {
@@ -127,7 +132,7 @@ const resources = {
 
       // Vehicle categories
       "category.cars": "Cars",
-      "category.suv": "SUV",
+      "category.suv": "SUVs",
       "category.trucks": "Trucks",
       "category.motorcycles": "Motorcycles",
       "category.vans": "Vans",
@@ -153,7 +158,12 @@ const resources = {
       "language.de": "German",
       "language.en": "English",
       "language.fr": "French",
-      "language.it": "Italian"
+      "language.it": "Italian",
+
+      // Error messages
+      "error.notFound": "Page not found",
+      "error.serverError": "Server error occurred",
+      "error.tryAgain": "Please try again later"
     }
   }
 };
