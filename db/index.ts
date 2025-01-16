@@ -1,5 +1,6 @@
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import { neon, neonConfig } from '@neondatabase/serverless';
+import ws from "ws";
 import * as schema from "@db/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -12,29 +13,19 @@ let db: ReturnType<typeof drizzle>;
 
 try {
   console.log('Initializing database connection...');
-  console.log('Environment:', process.env.NODE_ENV);
 
-  // Configure Neon client settings
+  // Configure Neon client settings for WebSocket support
   neonConfig.fetchConnectionCache = true;
-
-  // Always use WebSocket in production, optional in development
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Configuring secure WebSocket connection for production');
-    neonConfig.useSecureWebSocket = true;
-    neonConfig.wsProxy = true; // Enable WebSocket proxy for better stability
-  } else {
-    console.log('Using default connection settings for development');
-  }
+  neonConfig.webSocketConstructor = ws;
+  neonConfig.useSecureWebSocket = true;
+  neonConfig.pipelineConnect = false; // Disable pipelining for better compatibility
+  neonConfig.wsProxy = process.env.NODE_ENV === 'production';
 
   // Create SQL connection
   const sql = neon(process.env.DATABASE_URL);
 
-  // Initialize Drizzle with retry logic
-  db = drizzle(sql, { 
-    schema,
-    // Add prepared statements cache for better performance
-    prepare: true,
-  });
+  // Initialize Drizzle
+  db = drizzle(sql, { schema });
 
   console.log('Database connection established successfully');
 } catch (error) {
