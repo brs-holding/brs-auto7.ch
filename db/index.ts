@@ -14,15 +14,14 @@ try {
   console.log('Initializing database connection...');
   console.log('Environment:', process.env.NODE_ENV);
 
-  // Force HTTP-only mode (no WebSocket)
-  neonConfig.webSocketConstructor = undefined;
-  neonConfig.httpAgent = undefined;
-  neonConfig.wsAgent = undefined;
+  // Configure Neon client settings
+  neonConfig.fetchConnectionCache = true;
+  neonConfig.useSecureWebSocket = true; // Ensure secure WebSocket connection
 
   // Create SQL connection
   const sql = neon(process.env.DATABASE_URL);
 
-  // Initialize Drizzle with HTTP-only mode
+  // Initialize Drizzle
   db = drizzle(sql, { schema });
 
   console.log('Database connection established successfully');
