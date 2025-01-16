@@ -1,5 +1,5 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import ws from "ws";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon, neonConfig } from '@neondatabase/serverless';
 import * as schema from "@db/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -12,21 +12,18 @@ let db: ReturnType<typeof drizzle>;
 
 try {
   console.log('Initializing database connection...');
+  console.log('Environment:', process.env.NODE_ENV);
 
-  // Configure database connection based on environment
-  const config = {
-    connectionString: process.env.DATABASE_URL,
-  };
+  // Force HTTP-only mode (no WebSocket)
+  neonConfig.webSocketConstructor = undefined;
+  neonConfig.httpAgent = undefined;
+  neonConfig.wsAgent = undefined;
 
-  // Only use WebSocket in development environment
-  if (process.env.NODE_ENV !== 'production') {
-    Object.assign(config, { ws });
-  }
+  // Create SQL connection
+  const sql = neon(process.env.DATABASE_URL);
 
-  db = drizzle({
-    ...config,
-    schema,
-  });
+  // Initialize Drizzle with HTTP-only mode
+  db = drizzle(sql, { schema });
 
   console.log('Database connection established successfully');
 } catch (error) {
