@@ -5,8 +5,10 @@ import { db } from "@db";
 import { sql } from "drizzle-orm";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Increase JSON and URL-encoded payload limits for image uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Enable CORS for development
 app.use((req, res, next) => {
@@ -15,6 +17,18 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+  next();
+});
+
+// Request size logging middleware
+app.use((req, res, next) => {
+  const contentLength = req.headers['content-length'];
+  if (contentLength) {
+    const sizeInMB = parseInt(contentLength) / (1024 * 1024);
+    if (sizeInMB > 10) {
+      console.log(`Large request detected: ${sizeInMB.toFixed(2)}MB for ${req.path}`);
+    }
   }
   next();
 });
@@ -65,8 +79,17 @@ app.use((req, res, next) => {
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
+
+      // Log the full error details for debugging
       console.error(`[Error] ${status}: ${message}`);
-      res.status(status).json({ message });
+      if (err.stack) {
+        console.error(err.stack);
+      }
+
+      // Send a sanitized error response to the client
+      res.status(status).json({ 
+        message: status === 413 ? "Request too large. Please reduce the size of your uploads." : message 
+      });
     });
 
     // Serve static files in production or set up Vite in development
@@ -77,7 +100,7 @@ app.use((req, res, next) => {
     }
 
     const PORT = parseInt(process.env.PORT || '5000', 10);
-    server.listen(PORT, () => {
+    server.listen(PORT, "0.0.0.0", () => {
       log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
     });
   } catch (error) {
