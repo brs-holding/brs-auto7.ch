@@ -58,6 +58,9 @@ export const carListings = pgTable("car_listings", {
   dealerName: text("dealer_name"),
   dealerLocation: text("dealer_location"),
   dealerPhone: text("dealer_phone"),
+  dealerWebsite: text("dealer_website"),
+  dealerImage: text("dealer_image"),
+  dealerRating: decimal("dealer_rating", { precision: 2, scale: 1 }), // 1-5 stars
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -70,6 +73,16 @@ export const favorites = pgTable("favorites", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
   uniqueFavorite: unique("unique_favorite_idx").on(table.userId, table.carListingId),
+}));
+
+// Comparison list table
+export const comparisons = pgTable("comparisons", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  carListingId: integer("car_listing_id").references(() => carListings.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  uniqueComparison: unique("unique_comparison_idx").on(table.userId, table.carListingId),
 }));
 
 // Create Zod schemas for validation
@@ -99,6 +112,9 @@ export const selectCarListingSchema = createSelectSchema(carListings);
 export const insertFavoriteSchema = createInsertSchema(favorites);
 export const selectFavoriteSchema = createSelectSchema(favorites);
 
+export const insertComparisonSchema = createInsertSchema(comparisons);
+export const selectComparisonSchema = createSelectSchema(comparisons);
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -108,11 +124,14 @@ export type CarListing = typeof carListings.$inferSelect;
 export type InsertCarListing = typeof carListings.$inferInsert;
 export type Favorite = typeof favorites.$inferSelect;
 export type InsertFavorite = typeof favorites.$inferInsert;
+export type Comparison = typeof comparisons.$inferSelect;
+export type InsertComparison = typeof comparisons.$inferInsert;
 
 // Export relations
 export const userRelations = {
   listings: () => carListings,
-  favorites: () => favorites
+  favorites: () => favorites,
+  comparisons: () => comparisons
 };
 
 export const carModelRelations = {
@@ -121,5 +140,6 @@ export const carModelRelations = {
 
 export const carListingRelations = {
   user: () => users,
-  favorites: () => favorites
+  favorites: () => favorites,
+  comparisons: () => comparisons
 };

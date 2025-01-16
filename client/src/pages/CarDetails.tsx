@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,12 @@ import {
   Facebook,
   Twitter,
   Link as LinkIcon,
+  Heart,
+  Scale,
+  Star,
+  StarHalf,
+  Globe,
+  MessageSquare,
 } from "lucide-react";
 import {
   Dialog,
@@ -35,6 +41,8 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import type { CarListing } from "../types/car";
+import { useToast } from "@/hooks/use-toast";
+import type { Favorite, Comparison } from "@db/schema";
 
 interface Params {
   id: string;
@@ -45,6 +53,9 @@ export function CarDetails() {
   const { t } = useTranslation();
   const [activeImage, setActiveImage] = useState(0);
   const [showZoomDialog, setShowZoomDialog] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isCompared, setIsCompared] = useState(false);
+  const { toast } = useToast();
 
   const { data: car, isLoading } = useQuery<CarListing>({
     queryKey: ['/api/cars', params.id],
@@ -56,6 +67,48 @@ export function CarDetails() {
       return response.json();
     },
   });
+
+  const toggleFavorite = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/favorites/${params.id}`, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to update favorite');
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsFavorite(!isFavorite);
+      toast({
+        title: isFavorite ? "Removed from favorites" : "Added to favorites",
+        duration: 2000,
+      });
+    }
+  });
+
+  const toggleCompare = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/comparisons/${params.id}`, {
+        method: isCompared ? 'DELETE' : 'POST',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to update comparison');
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsCompared(!isCompared);
+      toast({
+        title: isCompared ? "Removed from compare" : "Added to compare",
+        duration: 2000,
+      });
+    }
+  });
+
+  const handleMessageDealer = () => {
+    const subject = encodeURIComponent(`Inquiry about ${car?.make} ${car?.model} (${car?.year})`);
+    const body = encodeURIComponent(`I am interested in your ${car?.make} ${car?.model} listed for CHF ${car?.price?.toLocaleString()}.`);
+    window.location.href = `mailto:${car?.dealerEmail}?subject=${subject}&body=${body}`;
+  };
 
   const handleShare = async (platform: string) => {
     const url = window.location.href;
@@ -70,7 +123,10 @@ export function CarDetails() {
         break;
       case 'copy':
         await navigator.clipboard.writeText(url);
-        // You might want to show a toast notification here
+        toast({
+          title: "Link copied to clipboard",
+          duration: 2000,
+        });
         break;
     }
   };
@@ -121,9 +177,9 @@ export function CarDetails() {
             <div className="relative w-[700px] h-[525px] mx-auto bg-white rounded-lg overflow-hidden mb-4 group">
               {car.images && car.images[activeImage] && (
                 <>
-                  <img 
-                    src={car.images[activeImage]} 
-                    alt={`${car.make} ${car.model}`} 
+                  <img
+                    src={car.images[activeImage]}
+                    alt={`${car.make} ${car.model}`}
                     className="w-full h-full object-contain"
                   />
                   <button
@@ -175,6 +231,7 @@ export function CarDetails() {
 
             {/* Car Information */}
             <div className="space-y-8">
+              {/* Basic Info */}
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -218,7 +275,7 @@ export function CarDetails() {
                 </div>
               </div>
 
-              {/* Key Specifications */}
+              {/* Technical Specifications */}
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">{t("car.specifications")}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -298,49 +355,113 @@ export function CarDetails() {
 
           {/* Right Column - Contact and Additional Info */}
           <div className="space-y-6">
-            {/* Contact Card */}
             <div className="bg-white rounded-lg p-6 shadow-sm sticky top-4">
               <h2 className="text-xl font-semibold mb-4">{t("contact.title")}</h2>
 
+              {/* Action Buttons */}
+              <div className="flex gap-2 mb-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleFavorite.mutate()}
+                  className={`flex-1 ${isFavorite ? 'bg-primary/10' : ''}`}
+                >
+                  <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-primary' : ''}`} />
+                  {isFavorite ? 'Saved' : 'Save'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleCompare.mutate()}
+                  className={`flex-1 ${isCompared ? 'bg-primary/10' : ''}`}
+                >
+                  <Scale className="h-4 w-4 mr-2" />
+                  Compare
+                </Button>
+              </div>
+
               {/* Dealer Info */}
               {car.dealerName && (
-                <div className="mb-6 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-gray-400" />
-                    <span>{car.dealerName}</span>
-                  </div>
-                  {car.dealerLocation && (
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-gray-400" />
-                      <span>{car.dealerLocation}</span>
+                <div className="space-y-4 mb-6">
+                  {/* Dealer Header */}
+                  <div className="flex items-center gap-4">
+                    {car.dealerImage && (
+                      <img
+                        src={car.dealerImage}
+                        alt={car.dealerName}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                    )}
+                    <div>
+                      <h3 className="font-semibold">{car.dealerName}</h3>
+                      {car.dealerRating && (
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => {
+                            const rating = car.dealerRating || 0;
+                            if (i + 1 <= Math.floor(rating)) {
+                              return <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />;
+                            } else if (i + 0.5 <= rating) {
+                              return <StarHalf key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />;
+                            }
+                            return <Star key={i} className="h-4 w-4 text-gray-300" />;
+                          })}
+                          <span className="text-sm text-gray-600 ml-1">({car.dealerRating})</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {car.dealerPhone && (
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-gray-400" />
-                      <a 
+                  </div>
+
+                  {/* Contact Details */}
+                  <div className="space-y-3">
+                    {car.dealerPhone && (
+                      <a
                         href={`tel:${car.dealerPhone}`}
-                        className="text-primary hover:underline"
+                        className="flex items-center gap-3 text-primary hover:underline"
                       >
+                        <Phone className="h-5 w-5" />
                         {car.dealerPhone}
                       </a>
-                    </div>
-                  )}
+                    )}
+                    {car.dealerLocation && (
+                      <div className="flex items-center gap-3 text-gray-600">
+                        <MapPin className="h-5 w-5" />
+                        {car.dealerLocation}
+                      </div>
+                    )}
+                    {car.dealerWebsite && (
+                      <a
+                        href={car.dealerWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-primary hover:underline"
+                      >
+                        <Globe className="h-5 w-5" />
+                        Visit Website
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Contact Form */}
-              <form className="space-y-4">
-                <Input placeholder={t("contact.name")} />
-                <Input type="email" placeholder={t("contact.email")} />
-                <Input type="tel" placeholder={t("contact.phone")} />
-                <Textarea 
-                  placeholder={t("contact.message")}
-                  rows={4}
-                  defaultValue={`I am interested in the ${car.make} ${car.model} (${car.year}).`}
-                />
-                <Button className="w-full">{t("contact.send")}</Button>
-              </form>
+              {/* Contact Button */}
+              <Button
+                className="w-full mb-4"
+                onClick={handleMessageDealer}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Message Dealer
+              </Button>
+
+              {car.dealerPhone && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => window.location.href = `tel:${car.dealerPhone}`}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Call Dealer
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -356,7 +477,7 @@ export function CarDetails() {
             {car.images && car.images[activeImage] && (
               <img
                 src={car.images[activeImage]}
-                alt={`${car.make} ${car.model}`}
+                alt={`${car.make} {car.model}`}
                 className="w-full h-full object-contain"
               />
             )}
@@ -373,7 +494,7 @@ export function CarDetails() {
                 >
                   <img
                     src={image}
-                    alt={`${car.make} ${car.model} view ${index + 1}`}
+                    alt={`${car.make} {car.model} view ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
