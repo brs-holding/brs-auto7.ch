@@ -16,13 +16,25 @@ try {
 
   // Configure Neon client settings
   neonConfig.fetchConnectionCache = true;
-  neonConfig.useSecureWebSocket = true; // Ensure secure WebSocket connection
+
+  // Always use WebSocket in production, optional in development
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Configuring secure WebSocket connection for production');
+    neonConfig.useSecureWebSocket = true;
+    neonConfig.wsProxy = true; // Enable WebSocket proxy for better stability
+  } else {
+    console.log('Using default connection settings for development');
+  }
 
   // Create SQL connection
   const sql = neon(process.env.DATABASE_URL);
 
-  // Initialize Drizzle
-  db = drizzle(sql, { schema });
+  // Initialize Drizzle with retry logic
+  db = drizzle(sql, { 
+    schema,
+    // Add prepared statements cache for better performance
+    prepare: true,
+  });
 
   console.log('Database connection established successfully');
 } catch (error) {

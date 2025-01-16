@@ -4,16 +4,20 @@ import { type Express } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import bcrypt from "bcryptjs";
-import { users, insertUserSchema, type User } from "@db/schema";
+import { users, type User } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
 const MemoryStore = createMemoryStore(session);
 
-// Extend Express.User
+// Define a custom User type for Express that extends our schema User type
 declare global {
   namespace Express {
-    interface User extends Omit<User, 'password'> {}
+    interface User {
+      id: number;
+      email: string;
+      username: string;
+    }
   }
 }
 
@@ -93,10 +97,14 @@ export async function setupAuth(app: Express) {
         .where(eq(users.id, id))
         .limit(1);
 
+      if (!user) {
+        return done(new Error('User not found'), null);
+      }
+
       done(null, user);
     } catch (err) {
       console.error('Deserialization error:', err);
-      done(err);
+      done(err, null);
     }
   });
 
@@ -142,23 +150,21 @@ export async function setupAuth(app: Express) {
 
       console.log('User created:', newUser.id);
 
-      // Log the user in
-      req.login({
+      const userResponse = {
         id: newUser.id,
         email: newUser.email,
         username: newUser.username
-      }, (err) => {
+      };
+
+      // Log the user in
+      req.login(userResponse, (err) => {
         if (err) {
           console.error("Login error after registration:", err);
           return res.status(500).json({ error: "Error logging in after registration" });
         }
         return res.json({
           message: "Registration successful",
-          user: {
-            id: newUser.id,
-            email: newUser.email,
-            username: newUser.username
-          }
+          user: userResponse
         });
       });
     } catch (error) {
