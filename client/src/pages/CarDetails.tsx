@@ -105,9 +105,8 @@ export function CarDetails() {
   });
 
   const handleMessageDealer = () => {
-    const subject = encodeURIComponent(`Inquiry about ${car?.make} ${car?.model} (${car?.year})`);
-    const body = encodeURIComponent(`I am interested in your ${car?.make} ${car?.model} listed for CHF ${car?.price?.toLocaleString()}.`);
-    window.location.href = `mailto:${car?.dealerEmail}?subject=${subject}&body=${body}`;
+    // Open message page in new tab
+    window.open(`/nachricht-lead/${params.id}`, '_blank');
   };
 
   const handleShare = async (platform: string) => {
@@ -374,9 +373,12 @@ export function CarDetails() {
                 variant="outline"
                 className="w-full mb-6"
                 onClick={handleMessageDealer}
+                asChild
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Message Dealer
+                <a href={`/nachricht-lead/${params.id}`} target="_blank" rel="noopener noreferrer">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Message Dealer
+                </a>
               </Button>
 
               {/* Action Buttons */}
