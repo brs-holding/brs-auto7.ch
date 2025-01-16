@@ -372,7 +372,6 @@ export function CarDetails() {
               <Button
                 variant="outline"
                 className="w-full mb-6"
-                onClick={handleMessageDealer}
                 asChild
               >
                 <a href={`/nachricht-lead/${params.id}`} target="_blank" rel="noopener noreferrer">
