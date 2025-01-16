@@ -358,6 +358,27 @@ export function CarDetails() {
             <div className="bg-white rounded-lg p-6 shadow-sm sticky top-4">
               <h2 className="text-xl font-semibold mb-4">{t("contact.title")}</h2>
 
+              {/* Phone Call Button */}
+              {car.dealerPhone && (
+                <Button
+                  className="w-full mb-4"
+                  onClick={() => window.location.href = `tel:${car.dealerPhone}`}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  {car.dealerPhone}
+                </Button>
+              )}
+
+              {/* Message Button */}
+              <Button
+                variant="outline"
+                className="w-full mb-6"
+                onClick={handleMessageDealer}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Message Dealer
+              </Button>
+
               {/* Action Buttons */}
               <div className="flex gap-2 mb-6">
                 <Button
@@ -382,7 +403,7 @@ export function CarDetails() {
 
               {/* Dealer Info */}
               {car.dealerName && (
-                <div className="space-y-4 mb-6">
+                <div className="space-y-4">
                   {/* Dealer Header */}
                   <div className="flex items-center gap-4">
                     {car.dealerImage && (
@@ -413,15 +434,6 @@ export function CarDetails() {
 
                   {/* Contact Details */}
                   <div className="space-y-3">
-                    {car.dealerPhone && (
-                      <a
-                        href={`tel:${car.dealerPhone}`}
-                        className="flex items-center gap-3 text-primary hover:underline"
-                      >
-                        <Phone className="h-5 w-5" />
-                        {car.dealerPhone}
-                      </a>
-                    )}
                     {car.dealerLocation && (
                       <div className="flex items-center gap-3 text-gray-600">
                         <MapPin className="h-5 w-5" />
@@ -441,26 +453,6 @@ export function CarDetails() {
                     )}
                   </div>
                 </div>
-              )}
-
-              {/* Contact Button */}
-              <Button
-                className="w-full mb-4"
-                onClick={handleMessageDealer}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Message Dealer
-              </Button>
-
-              {car.dealerPhone && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => window.location.href = `tel:${car.dealerPhone}`}
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Call Dealer
-                </Button>
               )}
             </div>
           </div>
@@ -494,7 +486,7 @@ export function CarDetails() {
                 >
                   <img
                     src={image}
-                    alt={`${car.make} {car.model} view ${index + 1}`}
+                    alt={`${car.make} ${car.model} view ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
