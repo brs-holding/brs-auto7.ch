@@ -14,7 +14,11 @@ neonConfig.fetchConnectionCache = true;
 neonConfig.webSocketConstructor = ws;
 neonConfig.useSecureWebSocket = true;
 neonConfig.pipelineConnect = false; // Disable pipelining for better compatibility
-neonConfig.wsProxy = process.env.NODE_ENV === 'production';
+
+// Set wsProxy based on environment
+if (process.env.NODE_ENV === 'production') {
+  neonConfig.wsProxy = (host) => `wss://${host}`;
+}
 
 // Create SQL connection
 const sql = neon(process.env.DATABASE_URL);

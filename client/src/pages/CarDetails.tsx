@@ -48,6 +48,12 @@ interface Params {
   id: string;
 }
 
+interface ExtendedCarListing extends CarListing {
+  dealerImage?: string;
+  dealerRating?: number;
+  dealerWebsite?: string;
+}
+
 export function CarDetails() {
   const params = useParams<Params>();
   const { t } = useTranslation();
@@ -57,7 +63,7 @@ export function CarDetails() {
   const [isCompared, setIsCompared] = useState(false);
   const { toast } = useToast();
 
-  const { data: car, isLoading } = useQuery<CarListing>({
+  const { data: car, isLoading } = useQuery<ExtendedCarListing>({
     queryKey: ['/api/cars', params.id],
     queryFn: async () => {
       const response = await fetch(`/api/cars/${params.id}`);
@@ -174,7 +180,7 @@ export function CarDetails() {
           <div className="lg:col-span-2">
             {/* Main Image */}
             <div className="relative w-[700px] h-[525px] mx-auto bg-white rounded-lg overflow-hidden mb-4 group">
-              {car.images && car.images[activeImage] && (
+              {car?.images && car.images[activeImage] && (
                 <>
                   <img
                     src={car.images[activeImage]}
@@ -190,13 +196,17 @@ export function CarDetails() {
                   {car.images.length > 1 && (
                     <>
                       <button
-                        onClick={() => setActiveImage((prev) => (prev === 0 ? car.images.length - 1 : prev - 1))}
+                        onClick={() => setActiveImage((prev) => 
+                          prev === 0 ? (car.images?.length ?? 1) - 1 : prev - 1
+                        )}
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <ArrowLeft className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => setActiveImage((prev) => (prev === car.images.length - 1 ? 0 : prev + 1))}
+                        onClick={() => setActiveImage((prev) => 
+                          prev === (car.images?.length ?? 1) - 1 ? 0 : prev + 1
+                        )}
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <ArrowRight className="h-5 w-5" />
@@ -208,7 +218,7 @@ export function CarDetails() {
             </div>
 
             {/* Thumbnails */}
-            {car.images && car.images.length > 1 && (
+            {car?.images && car.images.length > 1 && (
               <div className="grid grid-cols-6 gap-2 mb-8 max-w-[700px] mx-auto">
                 {car.images.map((image, index) => (
                   <button
@@ -328,7 +338,7 @@ export function CarDetails() {
               </div>
 
               {/* Features */}
-              {car.features && car.features.length > 0 && (
+              {car?.features && car.features.length > 0 && (
                 <div className="bg-white rounded-lg p-6 shadow-sm">
                   <h2 className="text-xl font-semibold mb-4">{t("car.features")}</h2>
                   <div className="grid grid-cols-2 gap-4">
@@ -343,7 +353,7 @@ export function CarDetails() {
               )}
 
               {/* Description */}
-              {car.description && (
+              {car?.description && (
                 <div className="bg-white rounded-lg p-6 shadow-sm">
                   <h2 className="text-xl font-semibold mb-4">{t("car.description")}</h2>
                   <p className="whitespace-pre-wrap text-gray-600">{car.description}</p>
@@ -358,7 +368,7 @@ export function CarDetails() {
               <h2 className="text-xl font-semibold mb-4">{t("contact.title")}</h2>
 
               {/* Phone Call Button */}
-              {car.dealerPhone && (
+              {car?.dealerPhone && (
                 <Button
                   className="w-full mb-4"
                   onClick={() => window.location.href = `tel:${car.dealerPhone}`}
@@ -403,9 +413,8 @@ export function CarDetails() {
               </div>
 
               {/* Dealer Info */}
-              {car.dealerName && (
-                <div className="space-y-4">
-                  {/* Dealer Header */}
+              <div className="space-y-4">
+                {car?.dealerName && (
                   <div className="flex items-center gap-4">
                     {car.dealerImage && (
                       <img
@@ -427,34 +436,25 @@ export function CarDetails() {
                             }
                             return <Star key={i} className="h-4 w-4 text-gray-300" />;
                           })}
-                          <span className="text-sm text-gray-600 ml-1">({car.dealerRating})</span>
+                          <span className="text-sm text-gray-600 ml-1">({rating})</span>
                         </div>
                       )}
                     </div>
                   </div>
+                )}
 
-                  {/* Contact Details */}
-                  <div className="space-y-3">
-                    {car.dealerLocation && (
-                      <div className="flex items-center gap-3 text-gray-600">
-                        <MapPin className="h-5 w-5" />
-                        {car.dealerLocation}
-                      </div>
-                    )}
-                    {car.dealerWebsite && (
-                      <a
-                        href={car.dealerWebsite}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 text-primary hover:underline"
-                      >
-                        <Globe className="h-5 w-5" />
-                        Visit Website
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
+                {car?.dealerWebsite && (
+                  <a
+                    href={car.dealerWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-primary hover:underline"
+                  >
+                    <Globe className="h-5 w-5" />
+                    Visit Website
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -464,10 +464,10 @@ export function CarDetails() {
       <Dialog open={showZoomDialog} onOpenChange={setShowZoomDialog}>
         <DialogContent className="max-w-[90vw] max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{car.make} {car.model}</DialogTitle>
+            <DialogTitle>{car?.make} {car?.model}</DialogTitle>
           </DialogHeader>
           <div className="relative w-full h-full">
-            {car.images && car.images[activeImage] && (
+            {car?.images && car.images[activeImage] && (
               <img
                 src={car.images[activeImage]}
                 alt={`${car.make} {car.model}`}
@@ -475,7 +475,7 @@ export function CarDetails() {
               />
             )}
           </div>
-          {car.images && car.images.length > 1 && (
+          {car?.images && car.images.length > 1 && (
             <div className="grid grid-cols-8 gap-2">
               {car.images.map((image, index) => (
                 <button
@@ -487,7 +487,7 @@ export function CarDetails() {
                 >
                   <img
                     src={image}
-                    alt={`${car.make} ${car.model} view ${index + 1}`}
+                    alt={`${car.make} {car.model} view ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
