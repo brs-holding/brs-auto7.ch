@@ -118,7 +118,7 @@ export function CarDetails() {
           {/* Left Column - Images and Basic Info */}
           <div className="lg:col-span-2">
             {/* Main Image */}
-            <div className="relative aspect-[4/3] bg-white rounded-lg overflow-hidden mb-4 group">
+            <div className="relative w-[700px] h-[525px] mx-auto bg-white rounded-lg overflow-hidden mb-4 group">
               {car.images && car.images[activeImage] && (
                 <>
                   <img 
@@ -154,7 +154,7 @@ export function CarDetails() {
 
             {/* Thumbnails */}
             {car.images && car.images.length > 1 && (
-              <div className="grid grid-cols-6 gap-2 mb-8">
+              <div className="grid grid-cols-6 gap-2 mb-8 max-w-[700px] mx-auto">
                 {car.images.map((image, index) => (
                   <button
                     key={index}
@@ -348,11 +348,11 @@ export function CarDetails() {
 
       {/* Image Zoom Dialog */}
       <Dialog open={showZoomDialog} onOpenChange={setShowZoomDialog}>
-        <DialogContent className="max-w-7xl">
+        <DialogContent className="max-w-[90vw] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{car.make} {car.model}</DialogTitle>
           </DialogHeader>
-          <div className="relative aspect-video">
+          <div className="relative w-full h-full">
             {car.images && car.images[activeImage] && (
               <img
                 src={car.images[activeImage]}
