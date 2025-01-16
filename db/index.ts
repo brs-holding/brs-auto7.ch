@@ -16,12 +16,8 @@ try {
   // Configure database connection based on environment
   const config = {
     connectionString: process.env.DATABASE_URL,
+    ws: process.env.NODE_ENV === 'production' ? undefined : ws
   };
-
-  // Only use WebSocket in development environment
-  if (process.env.NODE_ENV !== 'production') {
-    Object.assign(config, { ws });
-  }
 
   db = drizzle({
     ...config,
