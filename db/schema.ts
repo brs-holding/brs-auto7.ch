@@ -14,7 +14,20 @@ export const users = pgTable("users", {
   usernameIdx: unique("username_idx").on(table.username),
 }));
 
-// Car models table (existing)
+// Create Zod schemas for validation
+export const insertUserSchema = createInsertSchema(users, {
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+});
+
+export const selectUserSchema = createSelectSchema(users);
+
+// Export types
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+
+// Car models table
 export const carModels = pgTable("car_models", {
   id: serial("id").primaryKey(),
   make: text("make").notNull(),
@@ -24,7 +37,7 @@ export const carModels = pgTable("car_models", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Car listings table (updated with new fields)
+// Car listings table
 export const carListings = pgTable("car_listings", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
@@ -86,12 +99,6 @@ export const comparisons = pgTable("comparisons", {
 }));
 
 // Create Zod schemas for validation
-export const insertUserSchema = createInsertSchema(users, {
-  email: z.string().email(),
-  password: z.string().min(6),
-  username: z.string().min(3),
-});
-export const selectUserSchema = createSelectSchema(users);
 
 export const insertCarModelSchema = createInsertSchema(carModels);
 export const selectCarModelSchema = createSelectSchema(carModels);
@@ -116,8 +123,7 @@ export const insertComparisonSchema = createInsertSchema(comparisons);
 export const selectComparisonSchema = createSelectSchema(comparisons);
 
 // Export types
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
+
 export type CarModel = typeof carModels.$inferSelect;
 export type InsertCarModel = typeof carModels.$inferInsert;
 export type CarListing = typeof carListings.$inferSelect;

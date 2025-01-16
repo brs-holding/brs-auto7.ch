@@ -4,7 +4,7 @@ import { type Express } from "express";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import bcrypt from "bcryptjs";
-import { users, type User } from "@db/schema";
+import { users, type User, type InsertUser, insertUserSchema } from "@db/schema";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
@@ -13,7 +13,7 @@ const MemoryStore = createMemoryStore(session);
 // Define a custom User type for Express that extends our schema User type
 declare global {
   namespace Express {
-    interface User {
+    interface User extends User {
       id: number;
       email: string;
       username: string;
