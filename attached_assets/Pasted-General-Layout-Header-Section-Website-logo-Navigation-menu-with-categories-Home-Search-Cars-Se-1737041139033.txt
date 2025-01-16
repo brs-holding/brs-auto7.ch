@@ -1,0 +1,84 @@
+General Layout
+Header Section:
+
+Website logo.
+Navigation menu with categories: Home, Search Cars, Sell Car, Financing, etc.
+Login/Sign-up buttons.
+Breadcrumb Navigation:
+
+Display path for the current page (e.g., "Home > BMW > M135i xDrive Steptronic").
+Main Content Area
+Car Title and Key Info:
+
+Display car make, model, trim, and unique details (e.g., "BMW M135i xDrive Steptronic").
+Price prominently displayed (e.g., "CHF 45,800").
+Photo Gallery:
+
+High-resolution car images.
+Thumbnails for multiple images.
+Zoom-in functionality for images.
+Option to swipe or navigate between photos.
+Key Car Details Section:
+
+Table layout or list for quick overview:
+First Registration: (e.g., "2021").
+Mileage: (e.g., "20,000 km").
+Fuel Type: (e.g., "Petrol").
+Transmission: (e.g., "Automatic").
+Drive: (e.g., "All-wheel drive").
+Engine Power: (e.g., "306 HP").
+Exterior Color: (e.g., "White").
+Interior Design: (e.g., "Leather").
+Button for detailed specifications (e.g., "View Full Specs").
+Detailed Car Description:
+
+Paragraph or bullet list with descriptive text about the car, features, and condition.
+Car Features Section:
+
+List of included features (e.g., "Sunroof, GPS, Sports Seats, Heated Seats, etc.").
+Technical Data Section:
+
+Detailed data table:
+Body Type
+Number of Seats
+CO2 Emissions
+Euro Standard
+Acceleration (0-100 km/h)
+Top Speed
+Fuel Consumption (city, highway, combined)
+Tank Capacity
+Right Sidebar
+Contact Seller Box:
+
+Seller's name and dealership logo.
+"Contact Seller" button (opens a contact form or phone/email options).
+Seller’s address and location map.
+Financing Calculator:
+
+Field to input down payment, interest rate, and term.
+Monthly installment calculator.
+Share Listing:
+
+Social media share buttons (e.g., Facebook, Twitter, WhatsApp).
+Copy link button.
+Footer
+Links to Terms of Service, Privacy Policy, About Us, and Contact Information.
+Social media links.
+Functional Requirements
+Responsive Design:
+
+Must be mobile and tablet-friendly with adaptive layout adjustments.
+Dynamic Filters:
+
+Options to filter by price range, mileage, fuel type, and location.
+Backend Features:
+
+Database to store car listings (with images, descriptions, and specifications).
+Admin panel to add, edit, or delete car listings.
+SEO Optimization:
+
+Structured data (e.g., JSON-LD) for car details to improve search engine visibility.
+Performance:
+
+Lazy loading for images.
+Caching for faster page load times.

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, decimal, boolean, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, decimal, boolean, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -24,7 +24,7 @@ export const carModels = pgTable("car_models", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Car listings table (existing)
+// Car listings table (updated with new fields)
 export const carListings = pgTable("car_listings", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
@@ -36,6 +36,19 @@ export const carListings = pgTable("car_listings", {
   fuelType: text("fuel_type").notNull(),
   transmission: text("transmission").notNull(),
   driveType: text("drive_type"),
+  bodyType: text("body_type"),
+  doors: integer("doors"),
+  seats: integer("seats"),
+  power: integer("power"), // HP
+  engineSize: decimal("engine_size", { precision: 3, scale: 1 }), // Liters
+  acceleration: decimal("acceleration", { precision: 4, scale: 1 }), // 0-100 km/h
+  topSpeed: integer("top_speed"), // km/h
+  co2Emissions: integer("co2_emissions"), // g/km
+  fuelConsumption: jsonb("fuel_consumption").default({
+    city: 0,
+    highway: 0,
+    combined: 0
+  }), // L/100km
   category: text("category"),
   color: text("color"),
   interiorColor: text("interior_color"),
@@ -70,7 +83,17 @@ export const selectUserSchema = createSelectSchema(users);
 export const insertCarModelSchema = createInsertSchema(carModels);
 export const selectCarModelSchema = createSelectSchema(carModels);
 
-export const insertCarListingSchema = createInsertSchema(carListings);
+export const insertCarListingSchema = createInsertSchema(carListings, {
+  fuelConsumption: z.object({
+    city: z.number().min(0),
+    highway: z.number().min(0),
+    combined: z.number().min(0)
+  }).optional().default({
+    city: 0,
+    highway: 0,
+    combined: 0
+  })
+});
 export const selectCarListingSchema = createSelectSchema(carListings);
 
 export const insertFavoriteSchema = createInsertSchema(favorites);
